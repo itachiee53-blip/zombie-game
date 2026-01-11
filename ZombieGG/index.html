@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Zombie Defense: Final Version</title>
+    <title>Zombie Defense: Optimized</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     
@@ -14,9 +14,19 @@
             margin: 0; overflow: hidden; background-color: #1a1a1a;
             font-family: 'Kanit', sans-serif;
             touch-action: none; user-select: none; -webkit-user-select: none;
+            /* แก้ไข 1: ย้ายพื้นหลังมาจัดการด้วย CSS (ลื่นกว่ามาก) */
+            background: #1a1a1a url('background.jpg') no-repeat center center fixed;
+            background-size: cover;
         }
 
-        #gameCanvas { display: block; width: 100vw; height: 100vh; }
+        #gameCanvas { 
+            display: block; 
+            /* แก้ไข 2: ล็อค Canvas ให้แน่นกับจอ ป้องกันทะลุขอบใน Tablet */
+            position: fixed; 
+            top: 0; left: 0;
+            width: 100vw; height: 100vh; 
+            z-index: 1; /* อยู่ชั้นล่างสุด */
+        }
 
         /* Rotate Message */
         #rotate-message {
@@ -39,6 +49,7 @@
             position: absolute; pointer-events: none;
             width: 100%; height: 100%; top: 0; left: 0;
             padding: 10px; box-sizing: border-box; display: flex; flex-direction: column;
+            z-index: 10; /* อยู่เหนือ Canvas */
         }
 
         .hud-top {
@@ -203,16 +214,16 @@
     </div>
 
     <script>
-        // --- FIREBASE CONFIG (ใช้ของเดิมที่ถูกต้องจากไฟล์ของคุณ) ---
- const firebaseConfig = {
-  apiKey: "AIzaSyBYEwHH0-o2tne2k1SScvzc_PysUFyjIJI",
-  authDomain: "games-205b4.firebaseapp.com",
-  projectId: "games-205b4",
-  storageBucket: "games-205b4.firebasestorage.app",
-  messagingSenderId: "1001503576108",
-  appId: "1:1001503576108:web:4172af94cd502112670189",
-  measurementId: "G-775CY80H8X"
-};
+        // --- FIREBASE CONFIG ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyBYEwHH0-o2tne2k1SScvzc_PysUFyjIJI",
+            authDomain: "games-205b4.firebaseapp.com",
+            projectId: "games-205b4",
+            storageBucket: "games-205b4.firebasestorage.app",
+            messagingSenderId: "1001503576108",
+            appId: "1:1001503576108:web:4172af94cd502112670189",
+            measurementId: "G-775CY80H8X"
+        };
 
         let db = null; let isOnline = false;
         if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "AIzaSyD...") {
@@ -246,7 +257,7 @@
         const ui={start:document.getElementById('startScreen'),over:document.getElementById('gameOverScreen'),upgrade:document.getElementById('upgradeScreen'),cards:document.getElementById('cardContainer'),score:document.getElementById('scoreVal'),wave:document.getElementById('waveDisplay'),dmg:document.getElementById('dmgVal'),regen:document.getElementById('regenVal'),hpFill:document.getElementById('healthFill'),hpText:document.getElementById('hpText'),xpFill:document.getElementById('xpFill'),lvl:document.getElementById('levelDisplay'),announce:document.getElementById('waveAnnouncement'),float:document.getElementById('floatingTextContainer'),finalScore:document.getElementById('finalScore'),finalWave:document.getElementById('finalWave'),joyMove:document.getElementById('joy-move'),joyAim:document.getElementById('joy-aim'),rotateMsg:document.getElementById('rotate-message'),nameInput:document.getElementById('name-input')};
 
         // --- ASSETS LOADING ---
-        const bgImage = new Image(); bgImage.src = 'background.jpg'; 
+        // แก้ไข 3: ไม่โหลดภาพพื้นหลังผ่าน JS แล้ว (ใช้ CSS แทน)
         const playerImage = new Image(); playerImage.src = 'player.png'; 
 
         // === [โซนตั้งค่ารูปมอนสเตอร์] ===
@@ -322,17 +333,6 @@
         function resetJoy(s,el){ s.id=null; s.vec={x:0,y:0}; s.active=false; el.style.display='none'; }
         window.addEventListener('touchstart', handleTouch, {passive:false}); window.addEventListener('touchmove', handleTouch, {passive:false}); window.addEventListener('touchend', handleTouch);
 
-        function drawBackground() {
-            if (!bgImage.complete) { ctx.fillStyle = 'rgba(26,26,26,0.5)'; ctx.fillRect(0,0,canvas.width,canvas.height); return; }
-            const imgRatio = bgImage.width / bgImage.height;
-            const canvasRatio = canvas.width / canvas.height;
-            let renderW, renderH, offX, offY;
-            if (canvasRatio > imgRatio) { renderW = canvas.width; renderH = renderW / imgRatio; offX = 0; offY = (canvas.height - renderH) / 2; } 
-            else { renderH = canvas.height; renderW = renderH * imgRatio; offX = (canvas.width - renderW) / 2; offY = 0; }
-            ctx.drawImage(bgImage, offX, offY, renderW, renderH);
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.4)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-        }
-
         function createFloatingText(text, x, y, color) {
             const el = document.createElement('div'); el.className = 'floating-text'; el.innerText = text;
             el.style.left = x + 'px'; el.style.top = y + 'px'; el.style.color = color;
@@ -341,7 +341,10 @@
 
         function animate() {
             if(!gameActive) return; animationId=requestAnimationFrame(animate);
-            drawBackground();
+            
+            // แก้ไข 4: ใช้ clearRect แทนการวาดภาพทับ (ลื่นขึ้นมาก)
+            ctx.clearRect(0, 0, canvas.width, canvas.height); 
+            
             if(isPaused){ drawStatic(); return; }
 
             let mx=0, my=0; if(keys.w)my--; if(keys.s)my++; if(keys.a)mx--; if(keys.d)mx++;
@@ -407,7 +410,7 @@
         function shoot(angle) { playShootSound(); const spread=0.08; for(let i=0; i<player.turrets; i++) { const off=(i-(player.turrets-1)/2)*spread; projectiles.push(new Projectile(player.x,player.y,angle+off)); } }
         class Projectile { constructor(x,y,a){this.x=x;this.y=y;this.vx=Math.cos(a)*12;this.vy=Math.sin(a)*12;this.r=player.pSize;this.hits=1+player.pen;this.hitList=[];} update(){this.x+=this.vx;this.y+=this.vy;ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);ctx.fillStyle='#fbbf24';ctx.fill();} }
         
- class Enemy { 
+        class Enemy { 
             constructor(x,y,r,c,hp,spd,type){
                 this.x=x;this.y=y;this.r=r;this.c=c;this.hp=hp;this.maxHp=hp;this.spdMult=spd;
                 this.type=type; this.tick=Math.random()*100;
@@ -450,7 +453,6 @@
                 }
             } 
         }
-                
 
         class Particle { constructor(x,y,c){this.x=x;this.y=y;this.c=c;this.vx=(Math.random()-.5)*5;this.vy=(Math.random()-.5)*5;this.a=1;} update(){this.x+=this.vx;this.y+=this.vy;this.a-=0.05;ctx.save();ctx.globalAlpha=this.a;ctx.beginPath();ctx.arc(this.x,this.y,Math.random()*3,0,Math.PI*2);ctx.fillStyle=this.c;ctx.fill();ctx.restore();} }
         
