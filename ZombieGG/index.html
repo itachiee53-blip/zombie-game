@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Zombie Defense: Custom Character</title>
+    <title>Zombie Defense: Final Version</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     
@@ -203,7 +203,7 @@
     </div>
 
     <script>
-        // --- FIREBASE CONFIG (วางของเดิมของคุณได้เลย) ---
+        // --- FIREBASE CONFIG (ใช้ของเดิมที่ถูกต้องจากไฟล์ของคุณ) ---
  const firebaseConfig = {
   apiKey: "AIzaSyBYEwHH0-o2tne2k1SScvzc_PysUFyjIJI",
   authDomain: "games-205b4.firebaseapp.com",
@@ -247,7 +247,22 @@
 
         // --- ASSETS LOADING ---
         const bgImage = new Image(); bgImage.src = 'background.jpg'; 
-        const playerImage = new Image(); playerImage.src = 'player.png'; // <-- โหลดรูปตัวละคร
+        const playerImage = new Image(); playerImage.src = 'player.png'; 
+
+        // === [โซนตั้งค่ารูปมอนสเตอร์] ===
+        const enemyImages = {
+            normal: new Image(),
+            big: new Image(),
+            runner: new Image(),
+            zigzag: new Image(),
+            titan: new Image()
+        };
+        enemyImages.normal.src = 'zombie_normal.png';
+        enemyImages.big.src = 'zombie_big.png';
+        enemyImages.runner.src = 'zombie_runner.png';
+        enemyImages.zigzag.src = 'zombie_zigzag.png';
+        enemyImages.titan.src = 'zombie_titan.png';
+        // ============================
 
         // --- AUDIO POOL (Shoot Only) ---
         const audioPool = []; for(let i=0; i<6; i++) { const a=new Audio('shoot.mp3'); a.volume=0.3; audioPool.push(a); }
@@ -392,38 +407,65 @@
         function shoot(angle) { playShootSound(); const spread=0.08; for(let i=0; i<player.turrets; i++) { const off=(i-(player.turrets-1)/2)*spread; projectiles.push(new Projectile(player.x,player.y,angle+off)); } }
         class Projectile { constructor(x,y,a){this.x=x;this.y=y;this.vx=Math.cos(a)*12;this.vy=Math.sin(a)*12;this.r=player.pSize;this.hits=1+player.pen;this.hitList=[];} update(){this.x+=this.vx;this.y+=this.vy;ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);ctx.fillStyle='#fbbf24';ctx.fill();} }
         
-        class Enemy { 
+ class Enemy { 
             constructor(x,y,r,c,hp,spd,type){
                 this.x=x;this.y=y;this.r=r;this.c=c;this.hp=hp;this.maxHp=hp;this.spdMult=spd;
                 this.type=type; this.tick=Math.random()*100;
             } 
             update(){
+                // 1. คำนวณการเดิน
                 let a = Math.atan2(player.y-this.y, player.x-this.x);
-                // Gimmick: Zigzag Walk (Wave 8+)
                 if(this.type === 'zigzag') { this.tick += 0.1; a += Math.sin(this.tick) * 0.5; }
                 const s = (1.5+wave*0.1)*this.spdMult; 
                 this.x+=Math.cos(a)*s; this.y+=Math.sin(a)*s; 
-                ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);ctx.fillStyle=this.c;ctx.fill(); 
-                if(this.hp<this.maxHp){ ctx.fillStyle='red';ctx.fillRect(this.x-10,this.y-this.r-8,20,3); ctx.fillStyle='#22c55e';ctx.fillRect(this.x-10,this.y-this.r-8,20*(this.hp/this.maxHp),3); }
-                // Draw Shield Indicator (Titan Wave 15+)
-                if(this.type === 'titan' && wave >= 15) { ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke(); }
+
+                // 2. วาดตัวละคร (ใส่ระบบพลิกซ้ายขวา แก้หัวกลับ)
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                
+                // เช็คว่าผู้เล่นอยู่ทางซ้ายหรือไม่ ถ้าใช่ให้พลิกรูป
+                if (player.x < this.x) {
+                    ctx.scale(-1, 1); 
+                }
+
+                const size = this.r * 2.5; 
+                const img = enemyImages[this.type];
+                
+                if (img && img.complete && img.naturalHeight !== 0) {
+                    ctx.drawImage(img, -size/2, -size/2, size, size);
+                } else {
+                    // ถ้าไม่มีรูป ให้วาดวงกลมแทน
+                    ctx.beginPath(); ctx.arc(0, 0, this.r, 0, Math.PI*2); ctx.fillStyle = this.c; ctx.fill();
+                }
+                ctx.restore();
+
+                // 3. วาดหลอดเลือดและเกราะ
+                if(this.hp<this.maxHp){ 
+                    ctx.fillStyle='red';ctx.fillRect(this.x-10,this.y-this.r-8,20,3); 
+                    ctx.fillStyle='#22c55e';ctx.fillRect(this.x-10,this.y-this.r-8,20*(this.hp/this.maxHp),3); 
+                }
+                if(this.type === 'titan' && wave >= 15) { 
+                    ctx.beginPath(); ctx.arc(this.x, this.y, this.r+2, 0, Math.PI*2); 
+                    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke(); 
+                }
             } 
         }
+                
 
         class Particle { constructor(x,y,c){this.x=x;this.y=y;this.c=c;this.vx=(Math.random()-.5)*5;this.vy=(Math.random()-.5)*5;this.a=1;} update(){this.x+=this.vx;this.y+=this.vy;this.a-=0.05;ctx.save();ctx.globalAlpha=this.a;ctx.beginPath();ctx.arc(this.x,this.y,Math.random()*3,0,Math.PI*2);ctx.fillStyle=this.c;ctx.fill();ctx.restore();} }
         
-        // --- UPDATED DRAW STATIC (WITH IMAGE ROTATION) ---
+        // --- UPDATED DRAW STATIC (ซ่อนปืน) ---
         function drawStatic(aimAngle) { 
             let angle = aimAngle || 0;
             if(!mouse.down && !touchAim.active && touchMove.id !== null) angle = Math.atan2(touchMove.vec.y, touchMove.vec.x);
             else if (!mouse.down && !touchAim.active) angle = -Math.PI/2;
 
-            // 1. Draw Turrets (under player)
+            // 1. Draw Turrets (ปิดไว้ ไม่วาดออกมา)
             const spread = 0.08;
             for(let i=0; i<player.turrets; i++) {
                 const off=(i-(player.turrets-1)/2)*spread;
                 ctx.save(); ctx.translate(player.x, player.y); ctx.rotate(angle+off);
-                ctx.fillStyle='#60a5fa'; ctx.fillRect(5, -5, 30, 10); // Shifted slightly
+                // ctx.fillStyle='#60a5fa'; ctx.fillRect(5, -5, 30, 10); // <--- ปิดบรรทัดนี้แล้วครับ
                 ctx.restore();
             }
 
