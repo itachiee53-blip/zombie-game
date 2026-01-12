@@ -204,7 +204,7 @@
                 <div style="display:flex; align-items:center;">
                     <div style="flex-grow: 1;"></div>
                     <div class="top-btn" id="shop-btn" onclick="openShop()" style="margin-right: 10px;">🛒</div>
-                    <div class="top-btn" id="settings-btn" onclick="toggleSettings()">⚙️</div>
+                    <div class="top-btn" id="settings-btn" onclick="playClickSound(); toggleSettings()">⚙️</div>
                 </div>
                 <div style="display:flex; align-items:center; margin-top: 5px;">
                     <span class="level-badge" id="levelDisplay">Lv.1</span>
@@ -277,7 +277,7 @@
             <label>🔊 SFX Volume: <span id="sfxVolText">100%</span></label>
             <input type="range" min="0" max="1" step="0.1" value="1" oninput="updateSfxVolume(this.value)">
         </div> 
-        <button class="btn" style="margin-top: 30px;" onclick="toggleSettings()">ปิดหน้าต่าง</button>
+        <button class="btn" style="margin-top: 30px;" onclick="playClickSound(); toggleSettings()">ปิดหน้าต่าง</button>
     </div>
 
     <div class="menu-screen hidden" id="gameOverScreen">
@@ -371,6 +371,14 @@
         const bgMusic = new Audio('music.mp3'); bgMusic.loop = true; bgMusic.volume = 0.3; 
         const bossMusic = new Audio('boss_music.mp3'); bossMusic.loop = true; bossMusic.volume = 0.3;
         const gameOverSound = new Audio('gameover.mp3'); gameOverSound.volume = 0.2;
+        const clickSound = new Audio('click.mp3'); 
+        clickSound.volume = 1; // ความดังเริ่มต้นครึ่งหนึ่ง
+
+        function playClickSound() {
+            // รีเซ็ตเวลาเป็น 0 เพื่อให้กดรัวๆ ได้เสียงไม่ขาด
+            clickSound.currentTime = 0; 
+            clickSound.play().catch(() => {});
+        }
 
         const audioPool = []; for(let i=0; i<6; i++) { const a=new Audio('shoot.mp3'); a.volume=sfxVolume; audioPool.push(a); }
         let audioIdx = 0, lastSoundTime = 0;
@@ -397,10 +405,17 @@
         }
 
         function updateSfxVolume(val) {
-            sfxVolume = parseFloat(val); gameOverSound.volume = sfxVolume * 0.2;
+            sfxVolume = parseFloat(val); 
+            
+            // ปรับเสียง Game Over
+            gameOverSound.volume = sfxVolume * 0.2;
+            
+            // ✅ เพิ่มบรรทัดนี้: ให้เสียงคลิกดัง-เบา ตามที่รูด
+            clickSound.volume = sfxVolume * 0.5; 
+            
+            // อัปเดตตัวเลข % บนหน้าจอ
             document.getElementById('sfxVolText').innerText = Math.round(sfxVolume * 100) + '%';
         }
-
         let gameActive=false, isPaused=false, score=0, gold=0, wave=1;
         let enemies=[], projectiles=[], particles=[], enemyProjectiles=[];
         let animationId, regenInterval, autoSaveInterval, spawnTimer=0, waveActive=false, bossesToSpawn = 0, waveTimer = 0, waveFrameCount = 0;
@@ -511,7 +526,8 @@ function handleTouch(e) {
 
         function formatTime(seconds) { const m = Math.floor(seconds / 60), s = seconds % 60; return `${m}:${s < 10 ? '0' : ''}${s}`; }
 
-        function openShop() {
+       function openShop() {
+            playClickSound(); // ✅ เสียงคลิกเปิด
             if (gameActive && waveActive && enemies.length > 0) { createFloatingText("ร้านค้าเปิดเฉพาะก่อนเจอบอส!", player.x, player.y - 50, '#ef4444'); return; }
             if ((wave + 1) % 5 !== 0 && ui.shop.classList.contains('hidden')) { createFloatingText("ร้านค้าปิดอยู่", canvas.width / 2, canvas.height / 2, '#facc15'); return; }
             if (ui.shop.classList.contains('hidden')) { wasPausedBeforeSettings = isPaused; isPaused = true; ui.shop.classList.remove('hidden'); }
@@ -522,23 +538,34 @@ function handleTouch(e) {
         }
         
         function closeShop() {
+            playClickSound(); // ✅ เสียงคลิกปิด
             ui.shop.classList.add('hidden'); if (gameActive && !wasPausedBeforeSettings) isPaused = false;
             if (!waveActive && enemies.length === 0 && (wave + 1) % 5 === 0) { wave++; ui.announce.innerText = "BOSS COMING!"; ui.announce.style.opacity = 1; startWaveCountdown(3); }
         }
 
         function buyItem(id) {
             let cost = 0; if(id === 'heal') cost = 100; else if(id === 'dmg') cost = 300; else if(id === 'fire_shot') cost = 800; else if(id === 'crit') cost = 400; else if(id === 'reset') cost = 1000;
+            else if(id === 'insurance') { if (insuranceBought >= maxInsurance) return; cost = 200 + (insuranceBought * 300); }
+
             if (id === 'fire_shot' && (player.frost || player.fire)) return;
             if (id === 'reset' && !player.fire && !player.frost) { createFloatingText("ไม่มีสกิลให้รีเซ็ต!", canvas.width/2, canvas.height/2, '#9ca3af'); return; }
-            if (gold >= cost) { gold -= cost; ui.shopGold.innerText = gold; updateHud();
+            
+            if (gold >= cost) { 
+                playClickSound(); // ✅ เสียงคลิกซื้อของ (ดังเฉพาะตอนเงินพอ)
+                gold -= cost; ui.shopGold.innerText = gold; updateHud();
                 if(id === 'heal') { player.hp = Math.min(player.hp + 50, player.maxHp); createFloatingText("+50 HP", canvas.width/2, canvas.height/2, '#22c55e'); }
                 else if(id === 'dmg') { player.dmg += 1; createFloatingText("+1 DMG", canvas.width/2, canvas.height/2, '#facc15'); }
                 else if(id === 'fire_shot') { player.fire = true; createFloatingText("FIRE SHOT EQUIPPED!", canvas.width/2, canvas.height/2, '#ef4444'); openShop(); }
                 else if(id === 'crit') { player.crit = Math.min(1.0, player.crit + 0.05); createFloatingText("+5% Crit", canvas.width/2, canvas.height/2, '#ef4444'); }
                 else if(id === 'reset') { player.fire = false; player.frost = false; createFloatingText("SKILLS RESET!", canvas.width/2, canvas.height/2, '#d8b4fe'); openShop(); }
+                else if(id === 'insurance') {
+                    insuranceBought++; createFloatingText("INSURANCE ACTIVE!", canvas.width/2, canvas.height/2, '#60a5fa');
+                    const nextCost = 200 + (insuranceBought * 300); const costLabel = document.getElementById('ins-cost');
+                    if(insuranceBought >= maxInsurance) { costLabel.innerText = "MAX"; document.getElementById('shop-insurance').classList.add('owned'); } else { costLabel.innerText = nextCost + " G"; }
+                }
             } else { const originalColor = ui.shopGold.style.color; ui.shopGold.style.color = 'red'; setTimeout(() => ui.shopGold.style.color = originalColor, 200); }
         }
-
+     
         function animate() {
             if(!gameActive) return; animationId=requestAnimationFrame(animate);
             if(isPaused) return; 
@@ -666,7 +693,16 @@ function handleTouch(e) {
         function triggerLevelUp() { 
             isPaused=true; ui.upgrade.classList.remove('hidden'); ui.cards.innerHTML=''; let opts=[]; 
             while(opts.length<3){ const s=skills[Math.floor(Math.random()*skills.length)]; if((s.id==='t'&&player.turrets>=5) || (s.id==='r'&&player.regen>=30) || (s.id==='fr' && (player.frost || player.fire))) continue; if(!opts.includes(s))opts.push(s); } 
-            opts.forEach(s=>{ const el=document.createElement('div');el.className='skill-card'; el.innerHTML=`<div class="skill-icon">${s.i}</div><div class="skill-title">${s.n}</div><div class="skill-desc">${s.d}</div>`; el.onclick=()=>{ if(s.k) { player[s.k]+=s.v; if(s.k==='speed') player.baseSpeed+=s.v; } else if(s.t==='h'){player.maxHp+=s.v;player.hp+=s.v;} else if(s.t==='t')player.turrets=Math.min(5,player.turrets+s.v); else if(s.t==='r')player.regen=Math.min(30,player.regen+s.v); else if(s.t==='fr')player.frost=true; ui.upgrade.classList.add('hidden'); isPaused=false; updateHud(); }; ui.cards.appendChild(el); }); 
+            opts.forEach(s=>{ 
+                const el=document.createElement('div');el.className='skill-card'; 
+                el.innerHTML=`<div class="skill-icon">${s.i}</div><div class="skill-title">${s.n}</div><div class="skill-desc">${s.d}</div>`; 
+                el.onclick=()=>{ 
+                    playClickSound(); // ✅ เสียงคลิกเลือกสกิล
+                    if(s.k) { player[s.k]+=s.v; if(s.k==='speed') player.baseSpeed+=s.v; } else if(s.t==='h'){player.maxHp+=s.v;player.hp+=s.v;} else if(s.t==='t')player.turrets=Math.min(5,player.turrets+s.v); else if(s.t==='r')player.regen=Math.min(30,player.regen+s.v); else if(s.t==='fr')player.frost=true; 
+                    ui.upgrade.classList.add('hidden'); isPaused=false; updateHud(); 
+                }; 
+                ui.cards.appendChild(el); 
+            }); 
         }
 
         function startWaveCountdown(seconds) { let count = seconds; ui.announce.innerText = count; ui.announce.style.opacity = 1; let timer = setInterval(() => { count--; if (count > 0) ui.announce.innerText = count; else { clearInterval(timer); ui.announce.innerText = "START!"; setTimeout(() => { ui.announce.style.opacity = 0; startNextWave(); }, 1000); } }, 1000); }
@@ -676,16 +712,26 @@ function handleTouch(e) {
         function updateHud() { ui.score.innerText=score; ui.gold.innerText=gold; ui.dmg.innerText=player.dmg; ui.regen.innerText=player.regen; ui.hpFill.style.width=(player.hp/player.maxHp*100)+'%'; ui.hpText.innerText=`${Math.ceil(player.hp)}/${player.maxHp}`; ui.lvl.innerText=player.lvl>=30?'MAX':'Lv.'+player.lvl; ui.xpFill.style.width=player.lvl>=30?'100%':(player.xp/player.xpNeed*100)+'%'; }
         
         function startGame() {
+   playClickSound(); // ✅ เสียงคลิก
             if (!currentPlayerName || currentPlayerName === "Survivor") { const inputName = ui.nameInput.value.trim(); if(!inputName) { alert("กรุณาใส่ชื่อก่อนเริ่มเกม!"); return; } currentPlayerName = inputName; }
+            insuranceBought = 0; 
             gameActive = true; isPaused = false; score = 0; gold=0; wave = 1; resize(); player.x=canvas.width/2; player.y=canvas.height/2; player.hp=100; player.maxHp=100; player.lvl=1; player.xp=0; player.xpNeed=100; player.dmg=1; player.turrets=1; player.regen=5; player.baseSpeed=4; player.speed=4; player.slowStacks=0; player.slowTimer=0; player.frost = false; player.fire = false; player.crit = 0; enemies=[]; projectiles=[]; particles=[]; enemyProjectiles=[]; bossMusic.pause(); bossMusic.currentTime = 0; gameOverSound.pause(); gameOverSound.currentTime = 0; bgMusic.currentTime = 0; bgMusic.play().catch(()=>{}); ui.start.classList.add('hidden'); ui.over.classList.add('hidden'); updateHud(); startNextWave(); startRegen(); startAutoSave(); animate();
+            if(document.getElementById('ins-cost')) { document.getElementById('ins-cost').innerText = "200 G"; document.getElementById('shop-insurance').classList.remove('owned'); }
         }
 
         function gameOver() { gameActive = false; deathCount++; clearInterval(regenInterval); clearInterval(autoSaveInterval); cancelAnimationFrame(animationId); bgMusic.pause(); bossMusic.pause(); gameOverSound.currentTime = 0; gameOverSound.play().catch(()=>{}); ui.finalScore.innerText = score; ui.finalWave.innerText = `Wave: ${wave} | Deaths: ${deathCount}`; saveScoreData(currentPlayerName, wave, score); ui.over.classList.remove('hidden'); }
-        function restartGame() { ui.over.classList.add('hidden'); startGame(); }
-        function goToHome() { saveScoreData(currentPlayerName, wave, score); ui.over.classList.add('hidden'); ui.start.classList.remove('hidden'); fetchLeaderboard(); bgMusic.pause(); bossMusic.pause(); }
+        function restartGame() { 
+            playClickSound(); // ✅ เสียงคลิก
+            ui.over.classList.add('hidden'); startGame(); 
+        }
+        function goToHome() { 
+            playClickSound(); // ✅ เสียงคลิก
+            saveScoreData(currentPlayerName, wave, score); ui.over.classList.add('hidden'); ui.start.classList.remove('hidden'); fetchLeaderboard(); bgMusic.pause(); bossMusic.pause(); 
+        }
     </script>
 </body>
 </html>
+
 
 
 
