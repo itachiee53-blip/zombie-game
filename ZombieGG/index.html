@@ -1147,7 +1147,7 @@ if(!gameActive) return; animationId=requestAnimationFrame(animate);
             currentPlayerName = inputName;
 
             // TEST GOLD
-            gameActive = true; isPaused = false; score = 0; gold=1800; wave = 1;
+            gameActive = true; isPaused = false; score = 0; gold=0; wave = 1;
             resize(); 
             player.x=canvas.width/2; player.y=canvas.height/2; player.hp=100; player.maxHp=100; player.lvl=1; player.xp=0; player.xpNeed=100; player.dmg=1; player.turrets=1; player.regen=5; player.explosive=false;
             player.baseSpeed=4; player.speed=4; player.slowStacks=0; player.slowTimer=0;
@@ -1181,4 +1181,5 @@ if(!gameActive) return; animationId=requestAnimationFrame(animate);
     </script>
 </body>
 </html>
+
 
