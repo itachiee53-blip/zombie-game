@@ -19,8 +19,22 @@
         }
 
         #gameCanvas { 
-            display: block; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;
-        }
+    display: block; 
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    z-index: 1;
+    /* ✅ เพิ่มบรรทัดข้างล่างนี้เพื่อแก้บัคหน้าจอมือถือค้าง */
+    touch-action: none; 
+}
+
+/* ✅ และเพิ่มส่วนนี้ต่อท้าย #gameCanvas เพื่อให้ปุ่มเมนูกดติดง่ายขึ้น */
+.menu-screen {
+    touch-action: auto;
+    pointer-events: auto;
+}
 
         #rotate-message {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -529,11 +543,27 @@
         window.addEventListener('mouseup', ()=>mouse.down=false);
 
         function handleTouch(e) {
-            if(e.cancelable) e.preventDefault(); //
-            if(ui.rotateMsg.offsetWidth>0 && ui.rotateMsg.style.display!=='none') return;
-            if(e.target.id === 'settings-btn' || e.target.id === 'shop-btn') return;
-            
-            if(!gameActive||isPaused) return; e.preventDefault();
+    // 1. ป้องกันเบราว์เซอร์แย่งการทำงาน (เช่น การเลื่อนหน้าจอ)
+    if(e.cancelable) e.preventDefault(); 
+    
+    // 2. ปล่อยให้ปุ่มและช่องกรอกชื่อทำงานได้ (แก้บัคกดไม่ได้)
+    if(e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') return;
+    
+    // 3. ป้องกันปัญหาจากระบบหมุนจอ
+    if(ui.rotateMsg && ui.rotateMsg.offsetWidth > 0 && ui.rotateMsg.style.display !== 'none') return;
+
+    // --- ส่วนการทำงานของจอยสติ๊กที่เหลือของคุณ ---
+    if(!gameActive || isPaused) return; 
+    
+    if(e.touches.length === 0){ 
+        resetJoy(touchMove, ui.joyMove); 
+        resetJoy(touchAim, ui.joyAim); 
+        return;
+        }
+    // ...
+}
+
+    if(!gameActive || isPaused) return;
             if(e.touches.length===0){ resetJoy(touchMove,ui.joyMove); resetJoy(touchAim,ui.joyAim); return; }
             let mF=false, aF=false;
             for(let i=0; i<e.touches.length; i++) {
@@ -1261,6 +1291,7 @@ if(!gameActive) return; animationId=requestAnimationFrame(animate);
     </script>
 </body>
 </html>
+
 
 
 
