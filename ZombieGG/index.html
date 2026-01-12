@@ -35,7 +35,6 @@
             cursor: pointer; font-size: 1rem; font-weight: bold; margin-top: 20px;
         }
         @keyframes rotateAnim { 0% { transform: rotate(0deg); } 25% { transform: rotate(-90deg); } 50% { transform: rotate(-90deg); } 100% { transform: rotate(0deg); } }
-        @media only screen and (orientation: portrait) { #rotate-message { display: flex !important; } }
 
         .ui-layer {
             position: absolute; pointer-events: none; width: 100%; height: 100%; top: 0; left: 0;
@@ -200,13 +199,6 @@
 
     <canvas id="gameCanvas"></canvas>
 
-    <div id="rotate-message">
-        <div id="rotate-icon">📱</div>
-        <h2>กรุณาหมุนจอเป็นแนวนอน</h2>
-        <p>เพื่อประสบการณ์การเล่นที่ดีที่สุด</p>
-        <button id="force-play-btn" onclick="forcePlay()">กดที่นี่หากหมุนจอแล้วไม่หาย</button>
-    </div>
-
     <div id="joy-move" class="joystick-wrapper"><div class="joystick-base"><div class="joystick-stick"></div></div></div>
     <div id="joy-aim" class="joystick-wrapper"><div class="joystick-base"><div class="joystick-stick"></div></div></div>
 
@@ -248,8 +240,10 @@
         <div class="leaderboard-container">
             <div class="lb-title">🏆 อันดับวันนี้ (Reset Daily)</div>
             <table class="lb-table">
-                <thead><tr><th>#</th><th>ชื่อ</th><th>Wave</th><th style="text-align:right;">คะแนน</th></tr></thead>
-                <tbody id="lb-body-start"><tr><td colspan="4" style="text-align:center;">กำลังโหลด...</td></tr></tbody>
+             <thead>
+    <tr><th>#</th><th>ชื่อ</th><th>Wave</th><th>ตาย</th><th style="text-align:right;">คะแนน</th></tr>
+</thead>
+<tbody id="lb-body-over"></tbody>
             </table>
         </div>
     </div>
@@ -333,19 +327,38 @@
         };
 
         let db = null; let isOnline = true;
+        let deathCount = 0; // ตัวแปรสำหรับนับจำนวนการตายสะสม
         if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "AIzaSyD...") {
             firebase.initializeApp(firebaseConfig); db = firebase.firestore(); isOnline = true;
         }
         let currentPlayerName = "Survivor";
         function getTodayKey() { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
-        function saveScoreData(name, wave, score) {
-            const k=getTodayKey();
-            if(isOnline){ db.collection(`scores_${k}`).doc(name).set({name,wave,score,timestamp:firebase.firestore.FieldValue.serverTimestamp()}).catch(e=>{}); }
-            else{
-                const sk=`zombie_lb_${k}`; let d=JSON.parse(localStorage.getItem(sk)||'[]');
-                const idx=d.findIndex(p=>p.name===name);
-                if(idx>=0){if(score>d[idx].score){d[idx].score=score;d[idx].wave=wave;}} else{d.push({name,wave,score});}
-                d.sort((a,b)=>b.score-a.score); localStorage.setItem(sk,JSON.stringify(d)); updateLeaderboardUI(d);
+      function saveScoreData(name, wave, score) {
+    const k = getTodayKey();
+    if (isOnline) {
+        // ✅ เพิ่ม deaths: deathCount ลงในส่วน Online
+        db.collection(`scores_${k}`).doc(name).set({
+            name, wave, score, 
+            deaths: deathCount, 
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        }).catch(e => {});
+    } else {
+        const sk = `zombie_lb_${k}`;
+        let d = JSON.parse(localStorage.getItem(sk) || '[]');
+        const idx = d.findIndex(p => p.name === name);
+        if (idx >= 0) {
+            if (score > d[idx].score) {
+                d[idx].score = score;
+                d[idx].wave = wave;
+                d[idx].deaths = deathCount; // ✅ อัปเดตจำนวนตายในเครื่อง (Offline)
+            }
+        } else {
+            // ✅ เพิ่ม deaths: deathCount สำหรับผู้เล่นใหม่
+            d.push({ name, wave, score, deaths: deathCount });
+        }
+        d.sort((a, b) => b.score - a.score);
+        localStorage.setItem(sk, JSON.stringify(d));
+        updateLeaderboardUI(d);
             }
         }
         function fetchLeaderboard() {
@@ -363,7 +376,12 @@
     }
 
     // 2. ถ้ามีข้อมูล ให้วาดตารางตามปกติ
-    const h = d.map((p,i)=>`<tr><td class="lb-rank">${i+1}</td><td>${p.name}</td><td style="text-align:center;">${p.wave}</td><td class="lb-score">${p.score}</td></tr>`).join('');
+    const h = d.map((p,i)=>`<tr>
+        <td class="lb-rank">${i+1}</td>
+        <td>${p.name}</td>
+        <td style="text-align:center;">${p.wave}</td>
+        <td style="text-align:center; color:#ef4444;">${p.deaths || 0}</td> <td class="lb-score">${p.score}</td>
+    </tr>`).join('');
     document.getElementById('lb-body-start').innerHTML = h;
     document.getElementById('lb-body-over').innerHTML = h;
         }
@@ -1142,9 +1160,11 @@ if(!gameActive) return; animationId=requestAnimationFrame(animate);
         }
         
         function startGame() {
-            const inputName = ui.nameInput.value.trim();
-            if(!inputName) { alert("กรุณาใส่ชื่อก่อนเริ่มเกม!"); return; }
-            currentPlayerName = inputName;
+      if (!currentPlayerName || currentPlayerName === "Survivor") {
+    const inputName = ui.nameInput.value.trim();
+    if(!inputName) { alert("กรุณาใส่ชื่อก่อนเริ่มเกม!"); return; }
+    currentPlayerName = inputName;
+}
 
             // TEST GOLD
             gameActive = true; isPaused = false; score = 0; gold=0; wave = 1;
@@ -1167,6 +1187,7 @@ if(!gameActive) return; animationId=requestAnimationFrame(animate);
         }
         function gameOver() {
             gameActive = false; 
+            deathCount++; //
             clearInterval(regenInterval); clearInterval(autoSaveInterval); cancelAnimationFrame(animationId);
             
             bgMusic.pause(); 
@@ -1174,12 +1195,18 @@ if(!gameActive) return; animationId=requestAnimationFrame(animate);
             gameOverSound.currentTime = 0;
             gameOverSound.play().catch(()=>{});
 
-            ui.finalScore.innerText = score; ui.finalWave.innerText = `Wave ${wave}`;
-            saveScoreData(currentPlayerName, wave, score);
-            ui.over.classList.remove('hidden');
+            ui.finalScore.innerText = score; 
+         ui.finalWave.innerText = `Wave: ${wave} | Deaths: ${deathCount}`; 
+        saveScoreData(currentPlayerName, wave, score);
+        ui.over.classList.remove('hidden');
         }
+        function restartGame() {
+    ui.over.classList.add('hidden'); // ปิดหน้าจอจบเกม
+    startGame(); // เริ่มเกมใหม่ทันทีโดยใช้ชื่อเดิม
+}
     </script>
 </body>
 </html>
+
 
 
