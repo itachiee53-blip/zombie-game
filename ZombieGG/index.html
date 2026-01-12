@@ -2,26 +2,20 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
-    <title>Zombie Defense: Tablet Fixed</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no, viewport-fit=cover">
+    <title>Zombie Defense: Boundary Fix</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@400;700&display=swap');
 
-        /* แก้ไข 2: ล็อคหน้าจอให้แน่นหนา ป้องกันการเลื่อน/ซูมในแท็บเล็ต */
         html, body {
-            margin: 0; padding: 0;
-            width: 100%; height: 100%;
-            overflow: hidden; /* ห้ามเลื่อน */
-            background-color: #1a1a1a;
-            font-family: 'Kanit', sans-serif;
-            touch-action: none; /* ห้าม Browser จัดการ Touch เอง */
-            user-select: none; -webkit-user-select: none;
+            margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
+            background-color: #1a1a1a; font-family: 'Kanit', sans-serif;
+            touch-action: none; user-select: none; -webkit-user-select: none;
             background: #1a1a1a url('background.jpg') no-repeat center center fixed;
-            background-size: cover;
-            position: fixed; /* ล็อคตำแหน่ง Body */
+            background-size: cover; position: fixed;
         }
 
         #gameCanvas { 
@@ -44,10 +38,8 @@
         @media only screen and (orientation: portrait) { #rotate-message { display: flex !important; } }
 
         .ui-layer {
-            position: absolute; pointer-events: none;
-            width: 100%; height: 100%; top: 0; left: 0;
-            padding: 10px; box-sizing: border-box; display: flex; flex-direction: column;
-            z-index: 10;
+            position: absolute; pointer-events: none; width: 100%; height: 100%; top: 0; left: 0;
+            padding: 10px; box-sizing: border-box; display: flex; flex-direction: column; z-index: 10;
         }
 
         .hud-top {
@@ -57,8 +49,7 @@
 
         #settings-btn {
             pointer-events: auto; cursor: pointer; font-size: 30px; margin-left: 10px;
-            text-shadow: 0 0 5px black; transition: transform 0.2s;
-            touch-action: manipulation; /* ป้องกันการซูมปุ่ม */
+            text-shadow: 0 0 5px black; transition: transform 0.2s; touch-action: manipulation;
         }
         #settings-btn:hover { transform: rotate(90deg); }
 
@@ -66,7 +57,8 @@
         .bars-container { display: flex; flex-direction: column; align-items: flex-end; }
 
         .score-box { font-size: 24px; color: #fbbf24; }
-        .wave-box { font-size: 28px; color: #ef4444; }
+        .wave-box { font-size: 28px; color: #ef4444; display: flex; align-items: center; gap: 10px; }
+        .timer-box { font-size: 20px; color: #fff; background: rgba(0,0,0,0.5); padding: 2px 8px; border-radius: 5px; }
         .stat-row { font-size: 16px; color: #ddd; margin-top: 5px; }
         
         .bar-wrap {
@@ -130,7 +122,6 @@
 
         .upgrade-container { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; justify-content: center; }
         
-        /* แก้ไข: เพิ่ม touch-action ให้การ์ดสกิล เพื่อกันซูมเวลากด */
         .skill-card { 
             background: #1f2937; border: 2px solid #4b5563; border-radius: 8px; padding: 10px; width: 100px; 
             cursor: pointer; text-align: center; touch-action: manipulation; 
@@ -168,7 +159,10 @@
         <div class="hud-top">
             <div class="stats-left">
                 <div class="score-box">SCORE: <span id="scoreVal">0</span></div>
-                <div class="wave-box" id="waveDisplay">WAVE 1</div>
+                <div class="wave-box" id="waveDisplay">
+                    <span id="waveText">WAVE 1</span>
+                    <span class="timer-box" id="timerText">0:30</span>
+                </div>
                 <div class="stat-row">⚔️ <span id="dmgVal">1</span> | 💚 <span id="regenVal">5</span></div>
             </div>
             <div class="bars-container">
@@ -278,7 +272,7 @@
 
         // --- GAME LOGIC ---
         const canvas = document.getElementById('gameCanvas'); const ctx = canvas.getContext('2d');
-        const ui={start:document.getElementById('startScreen'),over:document.getElementById('gameOverScreen'),upgrade:document.getElementById('upgradeScreen'),settings:document.getElementById('settingsScreen'),cards:document.getElementById('cardContainer'),score:document.getElementById('scoreVal'),wave:document.getElementById('waveDisplay'),dmg:document.getElementById('dmgVal'),regen:document.getElementById('regenVal'),hpFill:document.getElementById('healthFill'),hpText:document.getElementById('hpText'),xpFill:document.getElementById('xpFill'),lvl:document.getElementById('levelDisplay'),announce:document.getElementById('waveAnnouncement'),float:document.getElementById('floatingTextContainer'),finalScore:document.getElementById('finalScore'),finalWave:document.getElementById('finalWave'),joyMove:document.getElementById('joy-move'),joyAim:document.getElementById('joy-aim'),rotateMsg:document.getElementById('rotate-message'),nameInput:document.getElementById('name-input')};
+        const ui={start:document.getElementById('startScreen'),over:document.getElementById('gameOverScreen'),upgrade:document.getElementById('upgradeScreen'),settings:document.getElementById('settingsScreen'),cards:document.getElementById('cardContainer'),score:document.getElementById('scoreVal'),wave:document.getElementById('waveText'),timer:document.getElementById('timerText'),dmg:document.getElementById('dmgVal'),regen:document.getElementById('regenVal'),hpFill:document.getElementById('healthFill'),hpText:document.getElementById('hpText'),xpFill:document.getElementById('xpFill'),lvl:document.getElementById('levelDisplay'),announce:document.getElementById('waveAnnouncement'),float:document.getElementById('floatingTextContainer'),finalScore:document.getElementById('finalScore'),finalWave:document.getElementById('finalWave'),joyMove:document.getElementById('joy-move'),joyAim:document.getElementById('joy-aim'),rotateMsg:document.getElementById('rotate-message'),nameInput:document.getElementById('name-input')};
 
         const playerImage = new Image(); playerImage.src = 'player.png'; 
 
@@ -295,17 +289,17 @@
         enemyImages.zigzag.src = 'zombie_zigzag.png';
         enemyImages.titan.src = 'zombie_titan.png';
 
-        // --- AUDIO SYSTEM (Updated Volume) ---
+        // --- AUDIO SYSTEM ---
         let bgmVolume = 1.0; 
         let sfxVolume = 1.0; 
         
         const bgMusic = new Audio('music.mp3');
         bgMusic.loop = true;
-        bgMusic.volume = bgmVolume * 0.3; // แก้ไข: เพิ่มเสียงเพลงเป็น 30%
+        bgMusic.volume = bgmVolume * 0.3; 
 
         const bossMusic = new Audio('boss_music.mp3');
         bossMusic.loop = true;
-        bossMusic.volume = bgmVolume * 0.3; // แก้ไข: เพิ่มเสียงบอสเป็น 30%
+        bossMusic.volume = bgmVolume * 0.3;
 
         const gameOverSound = new Audio('gameover.mp3');
         gameOverSound.volume = sfxVolume * 0.2;
@@ -339,7 +333,6 @@
 
         function updateMusicVolume(val) {
             bgmVolume = parseFloat(val);
-            // แก้ไข: ใช้ตัวคูณ 0.3
             bgMusic.volume = bgmVolume * 0.3; 
             bossMusic.volume = bgmVolume * 0.3; 
             document.getElementById('musicVolText').innerText = Math.round(bgmVolume * 100) + '%';
@@ -356,6 +349,10 @@
         let animationId, regenInterval, autoSaveInterval;
         let spawnTimer=0, enemiesSpawned=0, enemiesInWave=0, waveActive=false;
         let bossesToSpawn = 0; 
+        
+        // --- NEW TIME VARIABLES ---
+        let waveTimer = 0; // seconds remaining in current wave
+        let waveFrameCount = 0;
 
         const player={x:0,y:0,r:20,color:'#3b82f6',speed:4, baseSpeed:4, slowStacks:0, slowTimer:0, hp:100,maxHp:100,lvl:1,xp:0,xpNeed:100,dmg:1,pSize:6,turrets:1,regen:5,fireRate:15,fireCooldown:0, frost: false, crit: 0};
         
@@ -439,10 +436,48 @@
             createFloatingText("Slowed! x" + player.slowStacks, player.x, player.y-40, '#60a5fa');
         }
 
+        function formatTime(seconds) {
+            const m = Math.floor(seconds / 60);
+            const s = seconds % 60;
+            return `${m}:${s < 10 ? '0' : ''}${s}`;
+        }
+
         function animate() {
             if(!gameActive) return; animationId=requestAnimationFrame(animate);
             ctx.clearRect(0, 0, canvas.width, canvas.height); 
             if(isPaused){ drawStatic(); return; }
+
+            // --- WAVE TIMER LOGIC ---
+            if(waveActive) {
+                waveFrameCount++;
+                if(waveFrameCount >= 60) { // 1 second passed
+                    waveTimer--;
+                    waveFrameCount = 0;
+                    if(waveTimer < 0) waveTimer = 0;
+                    ui.timer.innerText = formatTime(waveTimer);
+                }
+
+                // Spawning Logic (Spawn if timer > 0)
+                if (waveTimer > 0) {
+                    spawnTimer++; 
+                    // Dynamic Spawn Rate: Faster in later waves
+                    const spawnRate = Math.max(20, 60 - wave * 2); 
+                    
+                    if(spawnTimer > spawnRate) { 
+                        spawnEnemy(); 
+                        spawnTimer=0; 
+                    }
+                } 
+                // Wave End Condition: Timer is 0 AND No enemies left
+                else if (enemies.length === 0) {
+                    waveActive = false;
+                    wave++;
+                    ui.announce.innerText = "WAVE CLEAR!"; 
+                    ui.announce.style.opacity = 1; 
+                    startWaveCountdown(3); 
+                }
+            }
+            // ------------------------
 
             if(player.slowTimer > 0) {
                 player.slowTimer--;
@@ -455,9 +490,16 @@
 
             let mx=0, my=0; if(keys.w)my--; if(keys.s)my++; if(keys.a)mx--; if(keys.d)mx++;
             if(touchMove.id!==null){ mx=touchMove.vec.x; my=touchMove.vec.y; }
-            if(mx!==0||my!==0){ if(touchMove.id===null){const l=Math.hypot(mx,my);mx/=l;my/=l;} player.x+=mx*player.speed; player.y+=my*player.speed; 
+            if(mx!==0||my!==0){ 
+                if(touchMove.id===null){const l=Math.hypot(mx,my);mx/=l;my/=l;} 
+                player.x+=mx*player.speed; 
+                player.y+=my*player.speed; 
+                
+                // --- FIX: เพิ่มระยะขอบล่าง (Padding) 40px สำหรับมือถือ/แท็บเล็ต ---
+                const bottomPadding = isMobile ? 40 : 0;
+                
                 player.x=Math.max(player.r,Math.min(canvas.width-player.r,player.x)); 
-                player.y=Math.max(player.r,Math.min(canvas.height-player.r,player.y)); 
+                player.y=Math.max(player.r,Math.min(canvas.height-player.r-bottomPadding,player.y)); 
             }
 
             if(player.fireCooldown>0) player.fireCooldown--;
@@ -466,19 +508,23 @@
             else if(touchAim.active){ wantShoot=true; aimAngle=touchAim.angle; }
             if(wantShoot && player.fireCooldown<=0){ shoot(aimAngle); player.fireCooldown=player.fireRate; }
 
-            if(waveActive) {
-                if(enemiesSpawned < enemiesInWave) { spawnTimer++; if(spawnTimer > Math.max(10, 60 - wave*2)) { spawnEnemy(); enemiesSpawned++; spawnTimer=0; } }
-                else if(enemies.length === 0) { 
-                    waveActive=false; wave++; 
-                    ui.announce.innerText="WAVE CLEAR!"; ui.announce.style.opacity=1; 
-                    startWaveCountdown(3); 
-                }
+            // --- BUG FIX: Reverse Loop for Deletion ---
+            for(let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                if(p.a <= 0) particles.splice(i, 1);
+                else p.update();
             }
 
-            particles.forEach((p,i)=>{ if(p.a<=0)particles.splice(i,1); else p.update(); });
-            projectiles.forEach((p,i)=>{ p.update(); if(p.x<0||p.x>canvas.width||p.y<0||p.y>canvas.height||p.hits<=0) projectiles.splice(i,1); });
+            for(let i = projectiles.length - 1; i >= 0; i--) {
+                const p = projectiles[i];
+                p.update();
+                if(p.x<0||p.x>canvas.width||p.y<0||p.y>canvas.height||p.hits<=0) {
+                    projectiles.splice(i, 1);
+                }
+            }
             
-            enemyProjectiles.forEach((p,i) => {
+            for(let i = enemyProjectiles.length - 1; i >= 0; i--) {
+                const p = enemyProjectiles[i];
                 p.update();
                 if(p.x<0||p.x>canvas.width||p.y<0||p.y>canvas.height) {
                     enemyProjectiles.splice(i,1);
@@ -490,44 +536,56 @@
                     enemyProjectiles.splice(i,1);
                     if(player.hp<=0) gameOver();
                 }
-            });
+            }
 
-            enemies.forEach((e,i)=>{
+            // Reverse Loop for Enemies to prevent disappearing bugs
+            for(let i = enemies.length - 1; i >= 0; i--) {
+                const e = enemies[i];
                 e.update();
-                if(Math.hypot(player.x-e.x, player.y-e.y)-e.r-player.r<1) { 
-                    player.hp-=15; 
+                
+                // Player collision
+                if(Math.hypot(player.x-e.x, player.y-e.y)-e.r-player.r < 1) { 
+                    player.hp -= 15; 
                     if (e.type === 'big') { applySlowLogic(); }
-                    enemies.splice(i,1); updateHud(); createExplosion(e.x,e.y,'#ef4444'); 
-                    if(player.hp<=0) gameOver(); 
+                    enemies.splice(i,1); 
+                    updateHud(); 
+                    createExplosion(e.x,e.y,'#ef4444'); 
+                    if(player.hp<=0) gameOver();
+                    continue; // Skip rest for this enemy
                 }
                 
-                projectiles.forEach(p=>{
-                    if(!p.hitList.includes(e) && Math.hypot(p.x-e.x, p.y-e.y)-e.r-p.r<1) {
+                // Projectile collision
+                for(let j = projectiles.length - 1; j >= 0; j--) {
+                    const p = projectiles[j];
+                    if(!p.hitList.includes(e) && Math.hypot(p.x-e.x, p.y-e.y)-e.r-p.r < 1) {
                         if(e.type === 'runner' && wave >= 20 && Math.random() < 0.3) {
                             createFloatingText("Miss!", e.x, e.y - 30, '#fbbf24');
-                            p.hits = 0; return; 
+                            p.hits = 0; 
+                            continue;
                         }
+                        
                         let dmg = player.dmg;
                         if(e.type === 'titan' && wave >= 15) {
                             dmg *= 0.5; createExplosion(p.x, p.y, '#888');
                         } else {
                             createExplosion(p.x, p.y, e.c);
                         }
-                        e.hp -= dmg; p.hits--; p.hitList.push(e);
                         
-                        // Frost Skill Logic
-                        if (player.frost) {
-                            e.slowTimer = 180;
-                        }
-
-                        // --- Critical Hit Logic ---
+                        // Crit Logic
+                        let isCrit = false;
                         if (Math.random() < player.crit) {
-                            dmg *= 2; // Double Damage
-                            createFloatingText("CRIT!", e.x, e.y - 40, '#fbbf24');
+                            dmg *= 2; 
+                            isCrit = true;
                         }
-                        // -------------------------
 
-                        if(e.hp<=0){ 
+                        e.hp -= dmg; 
+                        p.hits--; 
+                        p.hitList.push(e);
+                        
+                        if(isCrit) createFloatingText("CRIT!", e.x, e.y - 40, '#fbbf24');
+                        if(player.frost) e.slowTimer = 180;
+
+                        if(e.hp <= 0){ 
                             if (e.type === 'runner' && !e.isChild) {
                                 for(let k=0; k<2; k++) {
                                     let child = new Enemy(e.x+(Math.random()*30-15), e.y+(Math.random()*30-15), e.r*0.7, e.c, e.maxHp*0.6, e.spdMult, 'runner');
@@ -536,12 +594,18 @@
                                 }
                             }
                             enemies.splice(i,1); 
-                            score+=10+wave; gainXp(e.r>30?50:20); 
+                            score += 10 + wave; 
+                            gainXp(e.r > 30 ? 50 : 20); 
+                            break; // Enemy died, stop checking projectiles
+                        } else { 
+                            const kb = Math.atan2(e.y-player.y, e.x-player.x); 
+                            e.x += Math.cos(kb)*6; 
+                            e.y += Math.sin(kb)*6; 
                         }
-                        else{ const kb=Math.atan2(e.y-player.y,e.x-player.x); e.x+=Math.cos(kb)*6; e.y+=Math.sin(kb)*6; }
                     }
-                });
-            });
+                }
+            }
+            
             drawStatic(aimAngle);
         }
 
@@ -569,7 +633,7 @@
         class Projectile { 
             constructor(x,y,a){
                 this.x=x;this.y=y;this.vx=Math.cos(a)*12;this.vy=Math.sin(a)*12;this.r=player.pSize;
-                this.hits=1; // Reset to 1 (No Pierce)
+                this.hits=1; 
                 this.hitList=[];
                 this.frost = player.frost;
             } 
@@ -677,9 +741,8 @@
         
         function spawnEnemy() { 
             if (bossesToSpawn > 0) {
-                // *** BOSS BALANCE: Increased HP Scaling ***
                 let r = 60, c = '#8b5cf6', s = 0.3, type = 'titan';
-                let hp = 300 + (wave * 30); // เริ่ม 330+, เพิ่มทีละ 30
+                let hp = 300 + (wave * 30); 
 
                 let x, y;
                 if (Math.random() < .5) { x = Math.random() < .5 ? -r : canvas.width + r; y = Math.random() * canvas.height; }
@@ -709,7 +772,6 @@
             {id:'s',n:'Speed',d:'+10% Spd',i:'⚡',k:'speed',v:0.5},
             {id:'h',n:'Max HP',d:'+20 HP',i:'❤️',t:'h',v:20},
             {id:'t',n:'Turret',d:'+1 Gun',i:'🔫',t:'t',v:1},
-            // เปลี่ยน Boom เป็น Frost และ Regen เป็นไอคอนยา
             {id:'fr',n:'Frost',d:'Slow Shot',i:'❄️',t:'fr',v:1}, 
             {id:'c',n:'Critical',d:'+10% Crit',i:'🎯',k:'crit',v:0.1},
             {id:'r',n:'Regen',d:'+5 Heal',i:'💊',t:'r',v:5}
@@ -762,10 +824,13 @@
 
         function startNextWave() { 
             waveActive=true; 
-            enemiesSpawned=0; 
-            enemiesInWave = 10 + Math.ceil(wave * 5); 
             spawnTimer=0; 
             ui.wave.innerText=`WAVE ${wave}`; 
+            
+            // --- TIME SETUP ---
+            // Wave 1 = 30s, +5s per wave
+            waveTimer = 30 + ((wave - 1) * 5);
+            ui.timer.innerText = formatTime(waveTimer);
 
             if (wave % 5 === 0) {
                 bossesToSpawn = Math.floor(wave / 5);
@@ -796,7 +861,7 @@
             player.x=canvas.width/2; player.y=canvas.height/2; player.hp=100; player.maxHp=100; player.lvl=1; player.xp=0; player.xpNeed=100; player.dmg=1; player.turrets=1; player.regen=5; player.explosive=false;
             player.baseSpeed=4; player.speed=4; player.slowStacks=0; player.slowTimer=0;
             player.frost = false; 
-            player.crit = 0; // Reset Crit
+            player.crit = 0;
 
             enemies=[]; projectiles=[]; particles=[]; enemyProjectiles=[];
             
