@@ -143,11 +143,26 @@
         .slider-container input { width: 100%; cursor: pointer; touch-action: none; }
 
         /* SHOP CSS */
-        .shop-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px; width: 100%; max-width: 400px; }
+        .shop-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* แบ่ง 2 คอลัมน์เหมือนเดิม */
+    gap: 10px;
+    margin-top: 10px;
+    width: 100%;
+    max-width: 450px;
+
+    /* --- ส่วนที่เพิ่มมาใหม่ (ทำระบบ Scroll) --- */
+    max-height: 50vh;      /* กำหนดความสูงไว้แค่ครึ่งจอ (50%) */
+    overflow-y: auto;      /* ถ้าของล้น ให้มี Scrollbar เลื่อนได้ */
+    padding: 10px;         /* เว้นขอบนิดหน่อยให้สวยงาม */
+    background: rgba(0, 0, 0, 0.3); /* ใส่พื้นหลังจางๆ ให้ดูเป็นสัดส่วน */
+    border-radius: 10px;   /* ทำมุมโค้งให้กรอบรายการ */
+}
         .shop-item {
-            background: #374151; border: 2px solid #facc15; border-radius: 10px; padding: 10px;
-            text-align: center; cursor: pointer; transition: transform 0.1s; touch-action: manipulation; position: relative;
-        }
+    background: #374151; border: 2px solid #facc15; border-radius: 10px; padding: 10px;
+    text-align: center; cursor: pointer; transition: transform 0.1s; touch-action: manipulation; position: relative;
+}
+            
         .shop-item.locked { opacity: 0.5; cursor: not-allowed; border-color: #6b7280; }
         .shop-item.locked::after {
             content: "🔒 LOCKED"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -168,6 +183,13 @@
         
         .fire-text { color: #ef4444 !important; font-weight: bold; }
     </style>
+    /* --- ปุ่มปิดใช้งาน --- */
+.btn-disabled {
+    filter: grayscale(100%);
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: auto;
+}
 </head>
 <body>
 
@@ -260,10 +282,15 @@
                 <div class="shop-cost">400 G</div>
                 <div class="shop-desc">เพิ่มโอกาสคริ +5%</div>
             </div>
-        </div>
-        <button class="btn" style="background:#4b5563;" onclick="closeShop()">ปิดร้านค้า</button>
-    </div>
+           <div class="shop-item" id="shop-reset" onclick="buyItem('reset')">
+               <div class="shop-icon">🧪</div>
+               <div class="shop-name" style="color: #d8b4fe;">Reset Potion</div>
+               <div class="shop-cost">1000 G</div>
+               <div class="shop-desc">ล้างพลังธาตุ (เลือกใหม่)</div>
+</div> </div> <button class="btn" onclick="closeShop()">ปิดร้านค้า</button>
 
+</div> ```
+    
     <div class="menu-screen hidden" id="settingsScreen">
         <h1 style="color: #fff; margin-bottom: 20px;">SETTINGS</h1>
         <div class="slider-container">
@@ -503,23 +530,29 @@
         }
 
 function openShop() {
-            // --- แก้ไขจุดที่ 2: เช็คเงื่อนไขห้ามกดเปิดเองมั่วซั่ว ---
-    // อนุญาตให้เปิดก็ต่อเมื่อ enemies หมดแล้ว และเป็นเวฟก่อนบอส (เช่น 4, 9, 14)
-    // หรือถ้ามันเปิดอยู่แล้ว (check class hidden) ก็ให้ทำงานต่อได้
+ // เช็ค 1: ถ้ายังยิงกันไม่จบ ห้ามเปิด
     if (gameActive && waveActive && enemies.length > 0) {
-        createFloatingText("Shop Locked!", player.x, player.y - 50, '#ef4444');
+        createFloatingText("ร้านค้าเปิดเฉพาะก่อนเจอบอส!", player.x, player.y - 50, '#ef4444');
         return; 
     }
-    // ---------------------------------------------------
 
+    // เช็ค 2: ถ้าไม่ใช่เวฟก่อนบอส (เช่น จบเวฟ 1, 2, 3) ห้ามเปิด!
+    // สูตร: (wave + 1) % 5 !== 0 แปลว่า เวฟหน้าไม่ใช่บอส
+    // และเพิ่มเงื่อนไข !ui.shop... เพื่อให้ถ้าร้านเปิดอยู่แล้ว (ตอนซื้อของ) จะได้ไม่บั๊ก
+    if ((wave + 1) % 5 !== 0 && ui.shop.classList.contains('hidden')) {
+        // >>> แจ้งเตือนกลางหน้าจอ ตามที่ขอ <<<
+        createFloatingText("ร้านค้าปิดอยู่", canvas.width / 2, canvas.height / 2, '#facc15');
+        return;
+    }
+
+    // --- ส่วนการเปิดร้าน (เหมือนเดิม) ---
     if (ui.shop.classList.contains('hidden')) {
         wasPausedBeforeSettings = isPaused;
         isPaused = true;
         ui.shop.classList.remove('hidden');
-            }
-            // ------------------------------------------------
+    }
 
-            ui.shopGold.innerText = gold;
+    ui.shopGold.innerText = gold;
 
             // --- แก้ไขจุดที่ 2: Logic การแสดงผลปุ่ม Fire Shot ---
             const fireItem = document.getElementById('shop-fire'); // อ้างอิง Element
@@ -560,6 +593,7 @@ function buyItem(id) {
             else if(id === 'dmg') cost = 300;
             else if(id === 'fire_shot') cost = 800; 
             else if(id === 'crit') cost = 400;
+            else if(id === 'reset') cost = 1000;
 
             // --- แก้ไขจุดที่ 1: เช็คว่ามีของอยู่แล้วหรือเปล่า ---
             // ถ้าจะซื้อ Fire Shot แต่มี Frost (ล็อค) หรือ มี Fire อยู่แล้ว (ซื้อแล้ว) -> ให้ return ออกไปเลย
@@ -591,6 +625,12 @@ function buyItem(id) {
                     player.crit = Math.min(1.0, player.crit + 0.05); 
                     createFloatingText("+5% Crit", canvas.width/2, canvas.height/2, '#ef4444'); 
                 }
+                else if(id === 'reset') {
+                player.fire = false;
+                player.frost = false;  // <--- บรรทัดนี้แหละที่ช่วยปลดล็อค!
+                createFloatingText("SKILLS RESET!", canvas.width/2, canvas.height/2, '#d8b4fe');
+                openShop(); 
+            }
             } else {
                 // ... (ส่วนตัวหนังสือสีแดงเมื่อเงินไม่พอ คงเดิมไว้) ...
                 const originalColor = ui.shopGold.style.color;
@@ -600,9 +640,13 @@ function buyItem(id) {
         }
 
         function animate() {
-            if(!gameActive) return; animationId=requestAnimationFrame(animate);
-            ctx.clearRect(0, 0, canvas.width, canvas.height); 
-            if(isPaused){ drawStatic(); return; }
+if(!gameActive) return; animationId=requestAnimationFrame(animate);
+
+    // --- แก้ไข: ถ้าหยุดเกม ให้หยุดทำงานเลย (ภาพจะค้างไว้ เห็นมอนสเตอร์ครบ) ---
+    if(isPaused) return; 
+    // -----------------------------------------------------------------
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // ค่อยลบจอถ้าเกมเล่นอยู่ปกติ
 
             if(waveActive) {
                 waveFrameCount++;
@@ -625,15 +669,17 @@ function buyItem(id) {
     waveActive = false;
     
     // เช็คว่า "เวฟหน้า" คือบอสหรือเปล่า? (เช่น จบเวฟ 4, 9, 14)
-    // สูตร: (wave + 1) หาร 5 ลงตัว คือจะเจอบอส
     if ((wave + 1) % 5 === 0) {
+        
+        // >>> เพิ่มบรรทัดนี้: ปลดล็อกปุ่มร้านค้า (ให้กลับมาเป็นสีสด) <<<
+        document.getElementById('shop-btn').classList.remove('btn-disabled'); 
+
         ui.announce.innerText = "SAFE ZONE UNLOCKED!";
         ui.announce.style.opacity = 1;
         
-        // หน่วงเวลา 2 วินาที แล้วเด้งร้านค้าขึ้นมา
         setTimeout(() => {
             ui.announce.style.opacity = 0;
-            openShop(); // บังคับเปิดร้านค้า
+            openShop(); 
         }, 2000);
     } 
     // ถ้าจบเวฟบอส (เวฟ 5, 10, 15)
@@ -1030,6 +1076,8 @@ function buyItem(id) {
         }
 
         function startNextWave() { 
+            // 1. ล็อกปุ่มร้านค้าทันทีที่เริ่มเวฟใหม่ (ให้เป็นสีเทา)
+    document.getElementById('shop-btn').classList.add('btn-disabled');
             // --- รีเซ็ตระบบแจ้งเตือน ---
     hasWarnedPreBoss = false; // <--- สำคัญ! ต้องรีเซ็ตค่านี้ทุกครั้งที่เริ่มเวฟใหม่
 
@@ -1075,7 +1123,7 @@ function buyItem(id) {
             currentPlayerName = inputName;
 
             // TEST GOLD
-            gameActive = true; isPaused = false; score = 0; gold=800; wave = 1;
+            gameActive = true; isPaused = false; score = 0; gold=1800; wave = 1;
             resize(); 
             player.x=canvas.width/2; player.y=canvas.height/2; player.hp=100; player.maxHp=100; player.lvl=1; player.xp=0; player.xpNeed=100; player.dmg=1; player.turrets=1; player.regen=5; player.explosive=false;
             player.baseSpeed=4; player.speed=4; player.slowStacks=0; player.slowTimer=0;
@@ -1109,3 +1157,4 @@ function buyItem(id) {
     </script>
 </body>
 </html>
+
