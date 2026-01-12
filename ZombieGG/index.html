@@ -312,6 +312,7 @@
             </table>
         </div>
         <button class="btn" onclick="restartGame()">เล่นใหม่อีกครั้ง</button>
+        <button class="btn" style="background: #4b5563; margin-left: 10px;" onclick="goToHome()">กลับหน้าหลัก</button>
     </div>
 
     <script>
@@ -341,6 +342,9 @@
             name, wave, score, 
             deaths: deathCount, 
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+    // เมื่อบันทึกสำเร็จ ให้ดึงข้อมูลอันดับใหม่มาโชว์ทันที
+    fetchLeaderboard();
         }).catch(e => {});
     } else {
         const sk = `zombie_lb_${k}`;
@@ -1225,9 +1229,25 @@ if(!gameActive) return; animationId=requestAnimationFrame(animate);
     ui.over.classList.add('hidden'); // ปิดหน้าจอจบเกม
     startGame(); // เริ่มเกมใหม่ทันทีโดยใช้ชื่อเดิม
 }
+        function goToHome() {
+    // 1. บันทึกคะแนนครั้งสุดท้ายเพื่อความชัวร์
+    saveScoreData(currentPlayerName, wave, score);
+    
+    // 2. ปิดหน้าจอจบเกม และเปิดหน้าแรก
+    ui.over.classList.add('hidden');
+    ui.start.classList.remove('hidden');
+    
+    // 3. ดึงอันดับใหม่ล่าสุดมาแสดงที่หน้าแรก
+    fetchLeaderboard();
+    
+    // 4. หยุดเสียงเพลง (ถ้ามี)
+    bgMusic.pause();
+    bossMusic.pause();
+}
     </script>
 </body>
 </html>
+
 
 
 
