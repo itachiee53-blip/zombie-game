@@ -394,7 +394,32 @@
         const bgMusic = new Audio('music.mp3'); bgMusic.loop = true; bgMusic.volume = 0.3; 
         const bossMusic = new Audio('boss_music.mp3'); bossMusic.loop = true; bossMusic.volume = 0.3;
         const gameOverSound = new Audio('gameover.mp3'); gameOverSound.volume = 0.2;
-        const clickSound = new Audio('click.mp3'); clickSound.volume = 0.5;
+        const clickSound = new Audio('click.mp3'); clickSound.volume = 1;
+        // ✅ ระบบแก้เสียงหายบนมือถือ (Unlock Audio)
+        // เมื่อแตะหน้าจอครั้งแรก ให้สั่งเสียงเล่นเบาๆ แล้วหยุดทันที เพื่อปลดล็อคระบบ
+        document.addEventListener('touchstart', function() {
+            if (bgMusic.paused) {
+                // กระตุ้นเสียงเพลง
+                bgMusic.play().then(() => {
+                    bgMusic.pause();
+                    bgMusic.currentTime = 0;
+                }).catch(() => {});
+                
+                // กระตุ้นเสียงคลิก
+                clickSound.play().then(() => {
+                    clickSound.pause();
+                    clickSound.currentTime = 0;
+                }).catch(() => {});
+                
+                // กระตุ้นเสียงปืน
+                if (audioPool.length > 0) {
+                    audioPool[0].play().then(() => {
+                        audioPool[0].pause();
+                        audioPool[0].currentTime = 0;
+                    }).catch(() => {});
+                }
+            }
+        }, { once: true });
 
         const audioPool = []; for(let i=0; i<6; i++) { const a=new Audio('shoot.mp3'); a.volume=sfxVolume; audioPool.push(a); }
         let audioIdx = 0, lastSoundTime = 0;
@@ -758,3 +783,4 @@
     </script>
 </body>
 </html>
+
