@@ -2,24 +2,30 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Zombie Defense: Critical Balance</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+    <title>Zombie Defense: Tablet Fixed</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@400;700&display=swap');
 
-        body {
-            margin: 0; overflow: hidden; background-color: #1a1a1a;
+        /* แก้ไข 2: ล็อคหน้าจอให้แน่นหนา ป้องกันการเลื่อน/ซูมในแท็บเล็ต */
+        html, body {
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
+            overflow: hidden; /* ห้ามเลื่อน */
+            background-color: #1a1a1a;
             font-family: 'Kanit', sans-serif;
-            touch-action: none; user-select: none; -webkit-user-select: none;
+            touch-action: none; /* ห้าม Browser จัดการ Touch เอง */
+            user-select: none; -webkit-user-select: none;
             background: #1a1a1a url('background.jpg') no-repeat center center fixed;
             background-size: cover;
+            position: fixed; /* ล็อคตำแหน่ง Body */
         }
 
         #gameCanvas { 
-            display: block; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1;
+            display: block; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;
         }
 
         #rotate-message {
@@ -52,6 +58,7 @@
         #settings-btn {
             pointer-events: auto; cursor: pointer; font-size: 30px; margin-left: 10px;
             text-shadow: 0 0 5px black; transition: transform 0.2s;
+            touch-action: manipulation; /* ป้องกันการซูมปุ่ม */
         }
         #settings-btn:hover { transform: rotate(90deg); }
 
@@ -102,6 +109,7 @@
             font-size: 20px; border: none; border-radius: 50px;
             cursor: pointer; margin-top: 15px; font-family: 'Kanit', sans-serif;
             font-weight: bold; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+            touch-action: manipulation;
         }
         .hidden { display: none !important; }
 
@@ -121,7 +129,12 @@
         .lb-score { text-align: right; color: #22c55e; }
 
         .upgrade-container { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; justify-content: center; }
-        .skill-card { background: #1f2937; border: 2px solid #4b5563; border-radius: 8px; padding: 10px; width: 100px; cursor: pointer; text-align: center; }
+        
+        /* แก้ไข: เพิ่ม touch-action ให้การ์ดสกิล เพื่อกันซูมเวลากด */
+        .skill-card { 
+            background: #1f2937; border: 2px solid #4b5563; border-radius: 8px; padding: 10px; width: 100px; 
+            cursor: pointer; text-align: center; touch-action: manipulation; 
+        }
         .skill-icon { font-size: 28px; margin-bottom: 2px; }
         .skill-title { font-size: 12px; font-weight: bold; color: #fbbf24; }
         .skill-desc { font-size: 10px; color: #d1d5db; }
@@ -134,7 +147,7 @@
 
         .slider-container { margin: 15px 0; width: 100%; max-width: 300px; text-align: left; }
         .slider-container label { display: block; color: #ddd; margin-bottom: 5px; font-size: 18px; }
-        .slider-container input { width: 100%; cursor: pointer; }
+        .slider-container input { width: 100%; cursor: pointer; touch-action: none; }
     </style>
 </head>
 <body>
@@ -282,17 +295,17 @@
         enemyImages.zigzag.src = 'zombie_zigzag.png';
         enemyImages.titan.src = 'zombie_titan.png';
 
-        // --- AUDIO SYSTEM ---
+        // --- AUDIO SYSTEM (Updated Volume) ---
         let bgmVolume = 1.0; 
         let sfxVolume = 1.0; 
         
         const bgMusic = new Audio('music.mp3');
         bgMusic.loop = true;
-        bgMusic.volume = bgmVolume * 0.1; 
+        bgMusic.volume = bgmVolume * 0.3; // แก้ไข: เพิ่มเสียงเพลงเป็น 30%
 
         const bossMusic = new Audio('boss_music.mp3');
         bossMusic.loop = true;
-        bossMusic.volume = bgmVolume * 0.1;
+        bossMusic.volume = bgmVolume * 0.3; // แก้ไข: เพิ่มเสียงบอสเป็น 30%
 
         const gameOverSound = new Audio('gameover.mp3');
         gameOverSound.volume = sfxVolume * 0.2;
@@ -326,8 +339,9 @@
 
         function updateMusicVolume(val) {
             bgmVolume = parseFloat(val);
-            bgMusic.volume = bgmVolume * 0.1; 
-            bossMusic.volume = bgmVolume * 0.1; 
+            // แก้ไข: ใช้ตัวคูณ 0.3
+            bgMusic.volume = bgmVolume * 0.3; 
+            bossMusic.volume = bgmVolume * 0.3; 
             document.getElementById('musicVolText').innerText = Math.round(bgmVolume * 100) + '%';
         }
 
@@ -343,7 +357,6 @@
         let spawnTimer=0, enemiesSpawned=0, enemiesInWave=0, waveActive=false;
         let bossesToSpawn = 0; 
 
-        // Update player: removed 'pen', added 'crit'
         const player={x:0,y:0,r:20,color:'#3b82f6',speed:4, baseSpeed:4, slowStacks:0, slowTimer:0, hp:100,maxHp:100,lvl:1,xp:0,xpNeed:100,dmg:1,pSize:6,turrets:1,regen:5,fireRate:15,fireCooldown:0, frost: false, crit: 0};
         
         const keys={w:false,a:false,s:false,d:false};
@@ -696,9 +709,9 @@
             {id:'s',n:'Speed',d:'+10% Spd',i:'⚡',k:'speed',v:0.5},
             {id:'h',n:'Max HP',d:'+20 HP',i:'❤️',t:'h',v:20},
             {id:'t',n:'Turret',d:'+1 Gun',i:'🔫',t:'t',v:1},
+            // เปลี่ยน Boom เป็น Frost และ Regen เป็นไอคอนยา
             {id:'fr',n:'Frost',d:'Slow Shot',i:'❄️',t:'fr',v:1}, 
-            // Replaced Pierce with Critical
-            {id:'c',n:'Critical',d:'+10% Chance',i:'🎯',k:'crit',v:0.1},
+            {id:'c',n:'Critical',d:'+10% Crit',i:'🎯',k:'crit',v:0.1},
             {id:'r',n:'Regen',d:'+5 Heal',i:'💊',t:'r',v:5}
         ];
 
