@@ -182,14 +182,19 @@
         .shop-gold { font-size: 24px; color: #facc15; font-weight: bold; margin-bottom: 10px; }
         
         .fire-text { color: #ef4444 !important; font-weight: bold; }
-    </style>
-    /* --- ปุ่มปิดใช้งาน --- */
-.btn-disabled {
+      .btn-disabled {
+
     filter: grayscale(100%);
+
     opacity: 0.5;
+
     cursor: not-allowed;
+
     pointer-events: auto;
+
 }
+    </style>
+
 </head>
 <body>
 
@@ -287,34 +292,32 @@
                <div class="shop-name" style="color: #d8b4fe;">Reset Potion</div>
                <div class="shop-cost">1000 G</div>
                <div class="shop-desc">ล้างพลังธาตุ (เลือกใหม่)</div>
-</div> </div> <button class="btn" onclick="closeShop()">ปิดร้านค้า</button>
-
-</div> ```
-    
-    <div class="menu-screen hidden" id="settingsScreen">
+           </div> </div> <button class="btn" onclick="closeShop()">ปิดร้านค้า</button>
+    </div> <div class="menu-screen hidden" id="settingsScreen">
         <h1 style="color: #fff; margin-bottom: 20px;">SETTINGS</h1>
         <div class="slider-container">
-            <label>🎵 Music Volume: <span id="musicVolText">100%</span></label>
+            <label style="color:white;">🎵 Music Volume: <span id="musicVolText">100%</span></label>
             <input type="range" min="0" max="1" step="0.1" value="1" oninput="updateMusicVolume(this.value)">
         </div>
-        <div class="slider-container">
-            <label>🔊 SFX Volume: <span id="sfxVolText">100%</span></label>
+        <div class="slider-container" style="margin-top: 20px;">
+            <label style="color:white;">🔊 SFX Volume: <span id="sfxVolText">100%</span></label>
             <input type="range" min="0" max="1" step="0.1" value="1" oninput="updateSfxVolume(this.value)">
-        </div>
-        <button class="btn" onclick="toggleSettings()">ปิดหน้าต่าง</button>
+        </div> 
+        <button class="btn" style="margin-top: 30px;" onclick="toggleSettings()">ปิดหน้าต่าง</button>
     </div>
 
     <div class="menu-screen hidden" id="gameOverScreen">
         <h1 style="color: #fff; font-size: 40px;">จบเกม</h1>
-        <p style="font-size: 20px;">Wave: <span id="finalWave">1</span> | Score: <span id="finalScore" style="color:#fbbf24;">0</span></p>
-        <div class="leaderboard-container">
-            <div class="lb-title">🏆 อันดับวันนี้</div>
+        <p style="font-size: 20px; color: #fff;">Wave: <span id="finalWave">1</span> | Score: <span id="finalScore" style="color:#fbbf24;">0</span></p>
+        <div class="leaderboard-container" style="margin: 20px 0; max-height: 200px; overflow-y:auto;">
             <table class="lb-table">
-                <thead><tr><th>#</th><th>ชื่อ</th><th>Wave</th><th style="text-align:right;">คะแนน</th></tr></thead>
+                <thead>
+                    <tr><th>#</th><th>ชื่อ</th><th>Wave</th><th style="text-align:right;">คะแนน</th></tr>
+                </thead>
                 <tbody id="lb-body-over"></tbody>
             </table>
         </div>
-        <button class="btn" onclick="location.reload()">กลับหน้าหลัก</button>
+        <button class="btn" onclick="restartGame()">เล่นใหม่อีกครั้ง</button>
     </div>
 
     <script>
@@ -329,7 +332,7 @@
             measurementId: "G-775CY80H8X"
         };
 
-        let db = null; let isOnline = false;
+        let db = null; let isOnline = true;
         if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "AIzaSyD...") {
             firebase.initializeApp(firebaseConfig); db = firebase.firestore(); isOnline = true;
         }
@@ -351,8 +354,18 @@
             else{ const d=JSON.parse(localStorage.getItem(`zombie_lb_${k}`)||'[]'); updateLeaderboardUI(d); }
         }
         function updateLeaderboardUI(d) {
-            const h = d.map((p,i)=>`<tr><td class="lb-rank">${i+1}</td><td>${p.name}</td><td style="text-align:center;">${p.wave}</td><td class="lb-score">${p.score}</td></tr>`).join('') || `<tr><td colspan="4" style="text-align:center;color:#888;">ยังไม่มีข้อมูลวันนี้</td></tr>`;
-            document.getElementById('lb-body-start').innerHTML=h; document.getElementById('lb-body-over').innerHTML=h;
+           // 1. ดักจับกรณีไม่มีข้อมูล หรือโหลดไม่สำเร็จ เพื่อไม่ให้หน้าจอค้าง "กำลังโหลด"
+    if (!d || d.length === 0) {
+        const noData = `<tr><td colspan="4" style="text-align:center;color:#888;">ไม่สามารถโหลดอันดับได้ (Offline)</td></tr>`;
+        document.getElementById('lb-body-start').innerHTML = noData;
+        document.getElementById('lb-body-over').innerHTML = noData;
+        return; // หยุดการทำงานตรงนี้เลย
+    }
+
+    // 2. ถ้ามีข้อมูล ให้วาดตารางตามปกติ
+    const h = d.map((p,i)=>`<tr><td class="lb-rank">${i+1}</td><td>${p.name}</td><td style="text-align:center;">${p.wave}</td><td class="lb-score">${p.score}</td></tr>`).join('');
+    document.getElementById('lb-body-start').innerHTML = h;
+    document.getElementById('lb-body-over').innerHTML = h;
         }
         fetchLeaderboard();
 
@@ -570,8 +583,14 @@ function openShop() {
                 fireItem.classList.add('owned'); 
                 fireItem.querySelector('.shop-cost').innerText = "OWNED"; // เปลี่ยนราคาเป็นคำว่า OWNED
             }
-            // ------------------------------------------------
+const resetItem = document.getElementById('shop-reset');
+    if (resetItem) {
+        resetItem.classList.remove('locked'); 
+        if (!player.fire && !player.frost) {
+             resetItem.classList.add('locked'); 
         }
+    } // ปิด if
+} //  ต้องมีปีกกานี้เพื่อปิด function openShop()
         
         function closeShop() {
            ui.shop.classList.add('hidden');
@@ -598,6 +617,11 @@ function buyItem(id) {
             // --- แก้ไขจุดที่ 1: เช็คว่ามีของอยู่แล้วหรือเปล่า ---
             // ถ้าจะซื้อ Fire Shot แต่มี Frost (ล็อค) หรือ มี Fire อยู่แล้ว (ซื้อแล้ว) -> ให้ return ออกไปเลย
             if (id === 'fire_shot' && (player.frost || player.fire)) {
+                return; 
+            }
+    // 👇 --- 2. วางโค้ดชุดนี้เพิ่มครับ (ป้องกันเงินลดฟรี) ---
+            if (id === 'reset' && !player.fire && !player.frost) {
+                createFloatingText("ไม่มีสกิลให้รีเซ็ต!", canvas.width/2, canvas.height/2, '#9ca3af');
                 return; 
             }
             // ---------------------------------------------
