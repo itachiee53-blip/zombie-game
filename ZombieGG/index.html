@@ -433,10 +433,10 @@
         window.addEventListener('mouseup', ()=>mouse.down=false);
 
 function handleTouch(e) {
-            // 1. ป้องกันเบราว์เซอร์แย่งการทำงาน (แก้บัคค้าง)
+            // 1. ป้องกันเบราว์เซอร์แย่งการทำงาน (เช่น การเลื่อนหน้าจอขณะลากจอย)
             if(e.cancelable) e.preventDefault(); 
             
-            // 2. ปล่อยให้ปุ่มและช่องกรอกชื่อทำงานได้ (แก้บัคกดเริ่มเกมไม่ได้)
+            // 2. ปล่อยให้ปุ่มเริ่มเกมและช่องกรอกชื่อทำงานได้ปกติ
             if(e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') return;
             
             // 3. เช็คระบบหมุนจอ
@@ -453,6 +453,8 @@ function handleTouch(e) {
             let mF = false, aF = false;
             for(let i = 0; i < e.touches.length; i++) {
                 const t = e.touches[i];
+                
+                // จอยเคลื่อนที่ (ฝั่งซ้าย)
                 if(touchMove.id === t.identifier || (touchMove.id === null && t.clientX < window.innerWidth / 2 && touchAim.id !== t.identifier)){
                     if(touchMove.id === null){ 
                         touchMove.id = t.identifier; 
@@ -464,6 +466,8 @@ function handleTouch(e) {
                     }
                     mF = true; updateJoy(t, touchMove, ui.joyMove, true);
                 }
+                
+                // จอยเล็ง/ยิง (ฝั่งขวา)
                 if(touchAim.id === t.identifier || (touchAim.id === null && t.clientX > window.innerWidth / 2 && touchMove.id !== t.identifier)){
                     if(touchAim.id === null){ 
                         touchAim.id = t.identifier; 
@@ -480,7 +484,6 @@ function handleTouch(e) {
             if(!mF) resetJoy(touchMove, ui.joyMove); 
             if(!aF) resetJoy(touchAim, ui.joyAim);
         }
-
         function updateJoy(t, s, el, m) {
             const rect = el.getBoundingClientRect();
             const centerX = rect.left + rect.width / 2;
@@ -680,5 +683,6 @@ function handleTouch(e) {
     </script>
 </body>
 </html>
+
 
 
