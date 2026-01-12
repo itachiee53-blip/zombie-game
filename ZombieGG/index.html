@@ -135,13 +135,16 @@
 
         .upgrade-container { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; justify-content: center; }
         
-        .skill-card { 
-            background: #1f2937; border: 2px solid #4b5563; border-radius: 8px; padding: 10px; width: 100px; 
+       .skill-card { 
+            background: #1f2937; border: 2px solid #4b5563; border-radius: 8px; 
+            padding: 10px 5px; width: 100px; height: 130px; /* เพิ่มความสูง */
             cursor: pointer; text-align: center; touch-action: manipulation; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
         .skill-icon { font-size: 28px; margin-bottom: 2px; }
-        .skill-title { font-size: 12px; font-weight: bold; color: #fbbf24; }
-        .skill-desc { font-size: 10px; color: #d1d5db; }
+        .skill-title { font-size: 14px; font-weight: bold; color: #fff; margin-bottom: 2px; }
+        .skill-stat { font-size: 12px; color: #fbbf24; font-weight: bold; margin-bottom: 4px; } /* สีทองบอกค่าพลัง */
+        .skill-desc { font-size: 10px; color: #9ca3af; line-height: 1.2; } /* คำอธิบายสีเทา */
 
         #waveAnnouncement {
             position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%);
@@ -686,19 +689,38 @@ function handleTouch(e) {
         function startRegen() { clearInterval(regenInterval); regenInterval=setInterval(()=>{if(gameActive&&!isPaused&&player.hp<player.maxHp){const old=player.hp;player.hp=Math.min(player.hp+player.regen,player.maxHp);if(player.hp>old){updateHud();const el=document.createElement('div');el.className='floating-text';el.innerText=`+${player.regen}`;el.style.left=player.x+'px';el.style.top=(player.y-30)+'px';el.style.color='#22c55e';ui.float.appendChild(el);setTimeout(()=>el.remove(),1000);}}}, 3000); }
         function startAutoSave() { clearInterval(autoSaveInterval); autoSaveInterval=setInterval(()=>{if(gameActive&&!isPaused&&score>0) saveScoreData(currentPlayerName,wave,score);},60000); }
 
-        const skills = [ {id:'d',n:'Damage',d:'+1 Dmg',i:'⚔️',k:'dmg',v:1}, {id:'s',n:'Speed',d:'+10% Spd',i:'⚡',k:'speed',v:0.5}, {id:'h',n:'Max HP',d:'+20 HP',i:'❤️',t:'h',v:20}, {id:'t',n:'Turret',d:'+1 Gun',i:'🔫',t:'t',v:1}, {id:'fr',n:'Frost',d:'Slow Shot',i:'❄️',t:'fr',v:1}, {id:'c',n:'Critical',d:'+10% Crit',i:'🎯',k:'crit',v:0.1}, {id:'r',n:'Regen',d:'+5 Heal',i:'💊',t:'r',v:5} ];
+        const skills = [ 
+            {id:'d', n:'Damage', d:'+1 Dmg', i:'⚔️', k:'dmg', v:1, explain:'ยิงแรงขึ้น! สายเน้นตีแรง'}, 
+            {id:'s', n:'Speed', d:'+10% Spd', i:'⚡', k:'speed', v:0.5, explain:'เคลื่อนที่ไวขึ้น วิ่งหนีง่าย'}, 
+            {id:'h', n:'Max HP', d:'+20 HP', i:'❤️', t:'h', v:20, explain:'เพิ่มเลือดสูงสุด และฮีลทันที'}, 
+            {id:'t', n:'Turret', d:'+1 Gun', i:'🔫', t:'t', v:1, explain:'ยิงกระจาย เพิ่มจำนวนกระสุน'}, 
+            {id:'fr', n:'Frost', d:'Slow Shot', i:'❄️', t:'fr', v:1, explain:'กระสุนแช่แข็ง ศัตรูเดินช้าลง'}, 
+            {id:'c', n:'Critical', d:'+10% Crit', i:'🎯', k:'crit', v:0.1, explain:'โอกาสยิงคริ (ดาเมจ x2)'}, 
+            {id:'r', n:'Regen', d:'+5 Heal', i:'💊', t:'r', v:5, explain:'เพิ่มอัตราฟื้นฟูเลือดเอง อัตโนมัติ'} 
+        ];
 
         function gainXp(amt) { if(player.lvl>=30)return; player.xp+=amt; if(player.xp>=player.xpNeed){player.xp-=player.xpNeed; player.lvl++; player.xpNeed=Math.floor(player.xpNeed*1.3); triggerLevelUp();} updateHud(); }
         
         function triggerLevelUp() { 
             isPaused=true; ui.upgrade.classList.remove('hidden'); ui.cards.innerHTML=''; let opts=[]; 
             while(opts.length<3){ const s=skills[Math.floor(Math.random()*skills.length)]; if((s.id==='t'&&player.turrets>=5) || (s.id==='r'&&player.regen>=30) || (s.id==='fr' && (player.frost || player.fire))) continue; if(!opts.includes(s))opts.push(s); } 
+            
             opts.forEach(s=>{ 
-                const el=document.createElement('div');el.className='skill-card'; 
-                el.innerHTML=`<div class="skill-icon">${s.i}</div><div class="skill-title">${s.n}</div><div class="skill-desc">${s.d}</div>`; 
+                const el=document.createElement('div'); el.className='skill-card'; 
+                // ✅ ส่วนแสดงผลใหม่: มีไอคอน, ชื่อ, ค่าพลัง(สีทอง), และคำอธิบายไทย
+                el.innerHTML=`
+                    <div class="skill-icon">${s.i}</div>
+                    <div class="skill-title">${s.n}</div>
+                    <div class="skill-stat">${s.d}</div>
+                    <div class="skill-desc">${s.explain}</div>
+                `; 
                 el.onclick=()=>{ 
-                    playClickSound(); // ✅ เสียงคลิกเลือกสกิล
-                    if(s.k) { player[s.k]+=s.v; if(s.k==='speed') player.baseSpeed+=s.v; } else if(s.t==='h'){player.maxHp+=s.v;player.hp+=s.v;} else if(s.t==='t')player.turrets=Math.min(5,player.turrets+s.v); else if(s.t==='r')player.regen=Math.min(30,player.regen+s.v); else if(s.t==='fr')player.frost=true; 
+                    playClickSound(); // เสียงคลิก
+                    if(s.k) { player[s.k]+=s.v; if(s.k==='speed') player.baseSpeed+=s.v; } 
+                    else if(s.t==='h'){player.maxHp+=s.v;player.hp+=s.v;} 
+                    else if(s.t==='t')player.turrets=Math.min(5,player.turrets+s.v); 
+                    else if(s.t==='r')player.regen=Math.min(30,player.regen+s.v); 
+                    else if(s.t==='fr')player.frost=true; 
                     ui.upgrade.classList.add('hidden'); isPaused=false; updateHud(); 
                 }; 
                 ui.cards.appendChild(el); 
@@ -731,6 +753,7 @@ function handleTouch(e) {
     </script>
 </body>
 </html>
+
 
 
 
