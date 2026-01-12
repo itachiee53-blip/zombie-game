@@ -432,55 +432,54 @@
         window.addEventListener('mousedown', ()=>mouse.down=true);
         window.addEventListener('mouseup', ()=>mouse.down=false);
 
-        function handleTouch(e) {
-    // 1. ป้องกันเบราว์เซอร์แย่งการทำงาน (แก้บัคค้าง)
-    if(e.cancelable) e.preventDefault(); 
-    
-    // 2. ปล่อยให้ปุ่มและช่องกรอกชื่อทำงานได้ (ห้ามลบบรรทัดนี้เด็ดขาด)
-    if(e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') return;
-    
-    // 3. เช็คระบบหมุนจอ
-    if(ui.rotateMsg && ui.rotateMsg.offsetWidth > 0 && ui.rotateMsg.style.display !== 'none') return;
+function handleTouch(e) {
+            // 1. ป้องกันเบราว์เซอร์แย่งการทำงาน (แก้บัคค้าง)
+            if(e.cancelable) e.preventDefault(); 
+            
+            // 2. ปล่อยให้ปุ่มและช่องกรอกชื่อทำงานได้ (แก้บัคกดเริ่มเกมไม่ได้)
+            if(e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') return;
+            
+            // 3. เช็คระบบหมุนจอ
+            if(ui.rotateMsg && ui.rotateMsg.offsetWidth > 0 && ui.rotateMsg.style.display !== 'none') return;
 
-    if(!gameActive || isPaused) return; 
-    
-    if(e.touches.length === 0){ 
-        resetJoy(touchMove, ui.joyMove); 
-        resetJoy(touchAim, ui.joyAim); 
-        return; 
-    }
+            if(!gameActive || isPaused) return; 
+            
+            if(e.touches.length === 0){ 
+                resetJoy(touchMove, ui.joyMove); 
+                resetJoy(touchAim, ui.joyAim); 
+                return; 
+            }
 
-    let mF = false, aF = false;
-    // --- เริ่มต้นส่วน Loop ตรวจจับนิ้ว (ตรวจสอบจุดนี้ให้ดี) ---
-    for(let i = 0; i < e.touches.length; i++) {
-        const t = e.touches[i];
-        if(touchMove.id === t.identifier || (touchMove.id === null && t.clientX < window.innerWidth / 2 && touchAim.id !== t.identifier)){
-            if(touchMove.id === null){ 
-                touchMove.id = t.identifier; 
-                touchMove.startX = t.clientX; 
-                touchMove.startY = t.clientY; 
-                ui.joyMove.style.display = 'block'; 
-                ui.joyMove.style.left = (t.clientX - 40) + 'px'; 
-                ui.joyMove.style.top = (t.clientY - 40) + 'px'; 
+            let mF = false, aF = false;
+            for(let i = 0; i < e.touches.length; i++) {
+                const t = e.touches[i];
+                if(touchMove.id === t.identifier || (touchMove.id === null && t.clientX < window.innerWidth / 2 && touchAim.id !== t.identifier)){
+                    if(touchMove.id === null){ 
+                        touchMove.id = t.identifier; 
+                        touchMove.startX = t.clientX; 
+                        touchMove.startY = t.clientY; 
+                        ui.joyMove.style.display = 'block'; 
+                        ui.joyMove.style.left = (t.clientX - 40) + 'px'; 
+                        ui.joyMove.style.top = (t.clientY - 40) + 'px'; 
+                    }
+                    mF = true; updateJoy(t, touchMove, ui.joyMove, true);
+                }
+                if(touchAim.id === t.identifier || (touchAim.id === null && t.clientX > window.innerWidth / 2 && touchMove.id !== t.identifier)){
+                    if(touchAim.id === null){ 
+                        touchAim.id = t.identifier; 
+                        touchAim.startX = t.clientX; 
+                        touchAim.startY = t.clientY; 
+                        ui.joyAim.style.display = 'block'; 
+                        ui.joyAim.style.left = (t.clientX - 40) + 'px'; 
+                        ui.joyAim.style.top = (t.clientY - 40) + 'px'; 
+                        touchAim.active = true; 
+                    }
+                    aF = true; updateJoy(t, touchAim, ui.joyAim, false);
+                }
             }
-            mF = true; updateJoy(t, touchMove, ui.joyMove, true);
+            if(!mF) resetJoy(touchMove, ui.joyMove); 
+            if(!aF) resetJoy(touchAim, ui.joyAim);
         }
-        if(touchAim.id === t.identifier || (touchAim.id === null && t.clientX > window.innerWidth / 2 && touchMove.id !== t.identifier)){
-            if(touchAim.id === null){ 
-                touchAim.id = t.identifier; 
-                touchAim.startX = t.clientX; 
-                touchAim.startY = t.clientY; 
-                ui.joyAim.style.display = 'block'; 
-                ui.joyAim.style.left = (t.clientX - 40) + 'px'; 
-                ui.joyAim.style.top = (t.clientY - 40) + 'px'; 
-                touchAim.active = true; 
-            }
-            aF = true; updateJoy(t, touchAim, ui.joyAim, false);
-        }
-    }
-    if(!mF) resetJoy(touchMove, ui.joyMove); 
-    if(!aF) resetJoy(touchAim, ui.joyAim);
-} // <--- ตรวจสอบว่ามีวงเล็บปีกกาปิดฟังก์ชันแค่อันเดียวตรงนี้
 
         function updateJoy(t, s, el, m) {
             const rect = el.getBoundingClientRect();
@@ -681,4 +680,5 @@
     </script>
 </body>
 </html>
+
 
