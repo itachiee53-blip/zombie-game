@@ -19,22 +19,16 @@
         }
 
         #gameCanvas { 
-    display: block; 
-    position: absolute; 
-    top: 0; 
-    left: 0; 
-    width: 100%; 
-    height: 100%; 
-    z-index: 1;
-    /* ✅ เพิ่มบรรทัดข้างล่างนี้เพื่อแก้บัคหน้าจอมือถือค้าง */
-    touch-action: none; 
-}
+            display: block; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;
+            /* ✅ ป้องกันเบราว์เซอร์แย่งการสัมผัส (แก้บัคค้าง) */
+            touch-action: none; 
+        }
 
-/* ✅ และเพิ่มส่วนนี้ต่อท้าย #gameCanvas เพื่อให้ปุ่มเมนูกดติดง่ายขึ้น */
-.menu-screen {
-    touch-action: auto;
-    pointer-events: auto;
-}
+        /* ✅ ทำให้ปุ่มเมนูและช่องใส่ชื่อกดติดง่ายขึ้น */
+        .menu-screen {
+            touch-action: auto;
+            pointer-events: auto;
+        }
 
         #rotate-message {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -132,11 +126,11 @@
         .lb-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; color: #ddd; table-layout: fixed; }
         .lb-table th, .lb-table td { border-bottom: 1px solid #333; padding: 6px 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .lb-table th { color: #ef4444; text-align: center; border-bottom: 1px solid #555; }
-        .lb-table th:nth-child(1), .lb-table td:nth-child(1) { width: 35px; text-align: center; } /* ลำดับ */
-        .lb-table th:nth-child(2), .lb-table td:nth-child(2) { width: auto; text-align: center; } /* ชื่อ - จัดให้อยู่ตรงกลางตามที่ต้องการ */
-        .lb-table th:nth-child(3), .lb-table td:nth-child(3) { width: 60px; text-align: center; } /* Wave - เพิ่มความกว้างลดความแออัด */
-        .lb-table th:nth-child(4), .lb-table td:nth-child(4) { width: 60px; text-align: center; } /* ตาย - เพิ่มความกว้างลดความแออัด */
-        .lb-table th:nth-child(5), .lb-table td:nth-child(5) { width: 90px; text-align: right; color: #22c55e; font-weight: bold; } /* คะแนน */
+        .lb-table th:nth-child(1), .lb-table td:nth-child(1) { width: 35px; text-align: center; } 
+        .lb-table th:nth-child(2), .lb-table td:nth-child(2) { width: auto; text-align: center; } 
+        .lb-table th:nth-child(3), .lb-table td:nth-child(3) { width: 60px; text-align: center; } 
+        .lb-table th:nth-child(4), .lb-table td:nth-child(4) { width: 60px; text-align: center; } 
+        .lb-table th:nth-child(5), .lb-table td:nth-child(5) { width: 90px; text-align: right; color: #22c55e; font-weight: bold; } 
         .lb-table .lb-score { text-align: right; color: #22c55e; font-weight: bold; padding-right: 5px; }
 
         .upgrade-container { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; justify-content: center; }
@@ -159,26 +153,14 @@
         .slider-container label { display: block; color: #ddd; margin-bottom: 5px; font-size: 18px; }
         .slider-container input { width: 100%; cursor: pointer; touch-action: none; }
 
-        /* SHOP CSS */
         .shop-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr); /* แบ่ง 2 คอลัมน์เหมือนเดิม */
-    gap: 10px;
-    margin-top: 10px;
-    width: 100%;
-    max-width: 450px;
-
-    /* --- ส่วนที่เพิ่มมาใหม่ (ทำระบบ Scroll) --- */
-    max-height: 50vh;      /* กำหนดความสูงไว้แค่ครึ่งจอ (50%) */
-    overflow-y: auto;      /* ถ้าของล้น ให้มี Scrollbar เลื่อนได้ */
-    padding: 10px;         /* เว้นขอบนิดหน่อยให้สวยงาม */
-    background: rgba(0, 0, 0, 0.3); /* ใส่พื้นหลังจางๆ ให้ดูเป็นสัดส่วน */
-    border-radius: 10px;   /* ทำมุมโค้งให้กรอบรายการ */
-}
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px; width: 100%; max-width: 450px;
+            max-height: 50vh; overflow-y: auto; padding: 10px; background: rgba(0, 0, 0, 0.3); border-radius: 10px;
+        }
         .shop-item {
-    background: #374151; border: 2px solid #facc15; border-radius: 10px; padding: 10px;
-    text-align: center; cursor: pointer; transition: transform 0.1s; touch-action: manipulation; position: relative;
-}
+            background: #374151; border: 2px solid #facc15; border-radius: 10px; padding: 10px;
+            text-align: center; cursor: pointer; transition: transform 0.1s; touch-action: manipulation; position: relative;
+        }
             
         .shop-item.locked { opacity: 0.5; cursor: not-allowed; border-color: #6b7280; }
         .shop-item.locked::after {
@@ -186,10 +168,8 @@
             color: white; font-weight: bold; font-size: 16px; text-shadow: 2px 2px 2px black;
         }
 
-/* --- วางเพิ่มตรงนี้ --- */
         .shop-item.owned { opacity: 0.8; cursor: default; border-color: #22c55e; background: #064e3b; }
         .shop-item.owned .shop-name { color: #22c55e; }
-        /* ------------------ */
 
         .shop-item:active { transform: scale(0.95); }
         .shop-icon { font-size: 30px; margin-bottom: 5px; }
@@ -197,19 +177,8 @@
         .shop-cost { color: #facc15; font-size: 14px; margin-top: 5px; }
         .shop-desc { color: #9ca3af; font-size: 10px; margin-top: 2px; }
         .shop-gold { font-size: 24px; color: #facc15; font-weight: bold; margin-bottom: 10px; }
-        
         .fire-text { color: #ef4444 !important; font-weight: bold; }
-      .btn-disabled {
-
-    filter: grayscale(100%);
-
-    opacity: 0.5;
-
-    cursor: not-allowed;
-
-    pointer-events: auto;
-
-}
+        .btn-disabled { filter: grayscale(100%); opacity: 0.5; cursor: not-allowed; pointer-events: auto; }
     </style>
 
 </head>
@@ -258,19 +227,15 @@
         <div class="leaderboard-container">
             <div class="lb-title">🏆 อันดับวันนี้ (Reset Daily)</div>
             <table class="lb-table">
-    <thead>
-        <tr>
-            <th>#</th>
-            <th>ชื่อ</th>
-            <th style="text-align:center;">Wave</th>
-            <th style="text-align:center;">ตาย</th>
-            <th style="text-align:right;">คะแนน</th>
-        </tr>
-    </thead>
-    <tbody id="lb-body-start">
-        <tr><td colspan="5" style="text-align:center;">กำลังโหลด...</td></tr>
-    </tbody>
-</table>
+                <thead>
+                    <tr>
+                        <th>#</th><th>ชื่อ</th><th style="text-align:center;">Wave</th><th style="text-align:center;">ตาย</th><th style="text-align:right;">คะแนน</th>
+                    </tr>
+                </thead>
+                <tbody id="lb-body-start">
+                    <tr><td colspan="5" style="text-align:center;">กำลังโหลด...</td></tr>
+                </tbody>
+            </table>
         </div>
     </div>
 
@@ -284,43 +249,32 @@
         <div class="shop-gold">💰 <span id="shopGoldVal">0</span></div>
         <div class="shop-grid">
             <div class="shop-item" onclick="buyItem('heal')">
-                <div class="shop-icon">🩹</div>
-                <div class="shop-name">First Aid</div>
-                <div class="shop-cost">100 G</div>
-                <div class="shop-desc">ฟื้นเลือด +50</div>
+                <div class="shop-icon">🩹</div><div class="shop-name">First Aid</div><div class="shop-cost">100 G</div><div class="shop-desc">ฟื้นเลือด +50</div>
             </div>
             <div class="shop-item" onclick="buyItem('dmg')">
-                <div class="shop-icon">🗡️</div>
-                <div class="shop-name">Sharpen</div>
-                <div class="shop-cost">300 G</div>
-                <div class="shop-desc">เพิ่มดาเมจ +1</div>
+                <div class="shop-icon">🗡️</div><div class="shop-name">Sharpen</div><div class="shop-cost">300 G</div><div class="shop-desc">เพิ่มดาเมจ +1</div>
             </div>
             <div class="shop-item" id="shop-fire" onclick="buyItem('fire_shot')">
-                <div class="shop-icon">🔥</div>
-                <div class="shop-name fire-text">Fire Shot</div>
-                <div class="shop-cost">800 G</div>
-                <div class="shop-desc">เผาไหม้ (เลือกสาย)</div>
+                <div class="shop-icon">🔥</div><div class="shop-name fire-text">Fire Shot</div><div class="shop-cost">800 G</div><div class="shop-desc">เผาไหม้ (เลือกสาย)</div>
             </div>
             <div class="shop-item" onclick="buyItem('crit')">
-                <div class="shop-icon">🍀</div>
-                <div class="shop-name">Lucky Dice</div>
-                <div class="shop-cost">400 G</div>
-                <div class="shop-desc">เพิ่มโอกาสคริ +5%</div>
+                <div class="shop-icon">🍀</div><div class="shop-name">Lucky Dice</div><div class="shop-cost">400 G</div><div class="shop-desc">เพิ่มโอกาสคริ +5%</div>
             </div>
            <div class="shop-item" id="shop-reset" onclick="buyItem('reset')">
-               <div class="shop-icon">🧪</div>
-               <div class="shop-name" style="color: #d8b4fe;">Reset Potion</div>
-               <div class="shop-cost">1000 G</div>
-               <div class="shop-desc">ล้างพลังธาตุ (เลือกใหม่)</div>
-           </div> </div> <button class="btn" onclick="closeShop()">ปิดร้านค้า</button>
-    </div> <div class="menu-screen hidden" id="settingsScreen">
+               <div class="shop-icon">🧪</div><div class="shop-name" style="color: #d8b4fe;">Reset Potion</div><div class="shop-cost">1000 G</div><div class="shop-desc">ล้างพลังธาตุ (เลือกใหม่)</div>
+           </div>
+        </div>
+        <button class="btn" onclick="closeShop()">ปิดร้านค้า</button>
+    </div>
+
+    <div class="menu-screen hidden" id="settingsScreen">
         <h1 style="color: #fff; margin-bottom: 20px;">SETTINGS</h1>
         <div class="slider-container">
-            <label style="color:white;">🎵 Music Volume: <span id="musicVolText">100%</span></label>
+            <label>🎵 Music Volume: <span id="musicVolText">100%</span></label>
             <input type="range" min="0" max="1" step="0.1" value="1" oninput="updateMusicVolume(this.value)">
         </div>
         <div class="slider-container" style="margin-top: 20px;">
-            <label style="color:white;">🔊 SFX Volume: <span id="sfxVolText">100%</span></label>
+            <label>🔊 SFX Volume: <span id="sfxVolText">100%</span></label>
             <input type="range" min="0" max="1" step="0.1" value="1" oninput="updateSfxVolume(this.value)">
         </div> 
         <button class="btn" style="margin-top: 30px;" onclick="toggleSettings()">ปิดหน้าต่าง</button>
@@ -332,7 +286,7 @@
         <div class="leaderboard-container" style="margin: 20px 0; max-height: 200px; overflow-y:auto;">
             <table class="lb-table">
                 <thead>
-    <tr><th>#</th><th>ชื่อ</th><th>Wave</th><th>ตาย</th><th style="text-align:right;">คะแนน</th></tr>
+                    <tr><th>#</th><th>ชื่อ</th><th>Wave</th><th>ตาย</th><th style="text-align:right;">คะแนน</th></tr>
                 </thead>
                 <tbody id="lb-body-over"></tbody>
             </table>
@@ -342,7 +296,6 @@
     </div>
 
     <script>
-        // --- FIREBASE CONFIG ---
         const firebaseConfig = {
             apiKey: "AIzaSyBYEwHH0-o2tne2k1SScvzc_PysUFyjIJI",
             authDomain: "games-205b4.firebaseapp.com",
@@ -354,182 +307,119 @@
         };
 
         let db = null; let isOnline = true;
-        let deathCount = 0; // ตัวแปรสำหรับนับจำนวนการตายสะสม
+        let deathCount = 0;
         if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "AIzaSyD...") {
             firebase.initializeApp(firebaseConfig); db = firebase.firestore(); isOnline = true;
         }
         let currentPlayerName = "Survivor";
         function getTodayKey() { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
-      function saveScoreData(name, wave, score) {
-    const k = getTodayKey();
-    if (isOnline) {
-        // ✅ เพิ่ม deaths: deathCount ลงในส่วน Online
-        db.collection(`scores_${k}`).doc(name).set({
-            name, wave, score, 
-            deaths: deathCount, 
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(() => {
-    // เมื่อบันทึกสำเร็จ ให้ดึงข้อมูลอันดับใหม่มาโชว์ทันที
-    fetchLeaderboard();
-        }).catch(e => {});
-    } else {
-        const sk = `zombie_lb_${k}`;
-        let d = JSON.parse(localStorage.getItem(sk) || '[]');
-        const idx = d.findIndex(p => p.name === name);
-        if (idx >= 0) {
-            if (score > d[idx].score) {
-                d[idx].score = score;
-                d[idx].wave = wave;
-                d[idx].deaths = deathCount; // ✅ อัปเดตจำนวนตายในเครื่อง (Offline)
-            }
-        } else {
-            // ✅ เพิ่ม deaths: deathCount สำหรับผู้เล่นใหม่
-            d.push({ name, wave, score, deaths: deathCount });
-        }
-        d.sort((a, b) => b.score - a.score);
-        localStorage.setItem(sk, JSON.stringify(d));
-        updateLeaderboardUI(d);
+        
+        function saveScoreData(name, wave, score) {
+            const k = getTodayKey();
+            if (isOnline) {
+                db.collection(`scores_${k}`).doc(name).set({
+                    name, wave, score, deaths: deathCount, 
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                }).then(() => fetchLeaderboard()).catch(e => {});
+            } else {
+                const sk = `zombie_lb_${k}`;
+                let d = JSON.parse(localStorage.getItem(sk) || '[]');
+                const idx = d.findIndex(p => p.name === name);
+                if (idx >= 0) {
+                    if (score > d[idx].score) { d[idx].score = score; d[idx].wave = wave; d[idx].deaths = deathCount; }
+                } else { d.push({ name, wave, score, deaths: deathCount }); }
+                d.sort((a, b) => b.score - a.score);
+                localStorage.setItem(sk, JSON.stringify(d));
+                updateLeaderboardUI(d);
             }
         }
+
         function fetchLeaderboard() {
             const k=getTodayKey();
             if(isOnline){ db.collection(`scores_${k}`).orderBy("score","desc").limit(10).onSnapshot(s=>{let d=[];s.forEach(doc=>d.push(doc.data()));updateLeaderboardUI(d);}); }
             else{ const d=JSON.parse(localStorage.getItem(`zombie_lb_${k}`)||'[]'); updateLeaderboardUI(d); }
         }
-        function updateLeaderboardUI(d) {
-           // 1. ดักจับกรณีไม่มีข้อมูล หรือโหลดไม่สำเร็จ เพื่อไม่ให้หน้าจอค้าง "กำลังโหลด"
-    if (!d || d.length === 0) {
-        const noData = `<tr><td colspan="5" style="text-align:center;color:#888;">ไม่สามารถโหลดอันดับได้ (Offline)</td></tr>`;
-        document.getElementById('lb-body-start').innerHTML = noData;
-        document.getElementById('lb-body-over').innerHTML = noData;
-        return; // หยุดการทำงานตรงนี้เลย
-    }
 
-    // 2. ถ้ามีข้อมูล ให้วาดตารางตามปกติ
-  const h = d.map((p, i) => `
-        <tr style="color: white;"> <td style="text-align:center; width:35px;">${i + 1}</td>
-            <td style="text-align:center;">${p.name}</td>
-            <td style="text-align:center; width:60px;">${p.wave}</td>
-            <td style="text-align:center; width:60px;">${p.deaths || 0}</td>
-            <td style="text-align:right; width:85px; color:#22c55e; font-weight:bold; padding-right:5px;">
-                ${Number(p.score).toLocaleString()} </td>
-        </tr>`).join('');
-    document.getElementById('lb-body-start').innerHTML = h;
-    document.getElementById('lb-body-over').innerHTML = h;
+        function updateLeaderboardUI(d) {
+            if (!d || d.length === 0) {
+                const noData = `<tr><td colspan="5" style="text-align:center;color:#888;">ไม่สามารถโหลดอันดับได้ (Offline)</td></tr>`;
+                document.getElementById('lb-body-start').innerHTML = noData;
+                document.getElementById('lb-body-over').innerHTML = noData;
+                return;
+            }
+            const h = d.map((p, i) => `
+                <tr style="color: white;"> 
+                    <td style="text-align:center; width:35px;">${i + 1}</td>
+                    <td style="text-align:center;">${p.name}</td>
+                    <td style="text-align:center; width:60px;">${p.wave}</td>
+                    <td style="text-align:center; width:60px;">${p.deaths || 0}</td>
+                    <td style="text-align:right; width:85px; color:#22c55e; font-weight:bold; padding-right:5px;">${Number(p.score).toLocaleString()}</td>
+                </tr>`).join('');
+            document.getElementById('lb-body-start').innerHTML = h;
+            document.getElementById('lb-body-over').innerHTML = h;
         }
         fetchLeaderboard();
 
-        // --- GAME LOGIC ---
         const canvas = document.getElementById('gameCanvas'); const ctx = canvas.getContext('2d');
         const ui={start:document.getElementById('startScreen'),over:document.getElementById('gameOverScreen'),upgrade:document.getElementById('upgradeScreen'),settings:document.getElementById('settingsScreen'),shop:document.getElementById('shopScreen'),shopGold:document.getElementById('shopGoldVal'),shopFire:document.getElementById('shop-fire'),cards:document.getElementById('cardContainer'),score:document.getElementById('scoreVal'),gold:document.getElementById('goldVal'),wave:document.getElementById('waveText'),timer:document.getElementById('timerText'),dmg:document.getElementById('dmgVal'),regen:document.getElementById('regenVal'),hpFill:document.getElementById('healthFill'),hpText:document.getElementById('hpText'),xpFill:document.getElementById('xpFill'),lvl:document.getElementById('levelDisplay'),announce:document.getElementById('waveAnnouncement'),float:document.getElementById('floatingTextContainer'),finalScore:document.getElementById('finalScore'),finalWave:document.getElementById('finalWave'),joyMove:document.getElementById('joy-move'),joyAim:document.getElementById('joy-aim'),rotateMsg:document.getElementById('rotate-message'),nameInput:document.getElementById('name-input')};
 
         const playerImage = new Image(); playerImage.src = 'player.png'; 
+        const enemyImages = { normal: new Image(), big: new Image(), runner: new Image(), zigzag: new Image(), titan: new Image() };
+        enemyImages.normal.src = 'zombie_normal.png'; enemyImages.big.src = 'zombie_big.png'; enemyImages.runner.src = 'zombie_runner.png'; enemyImages.zigzag.src = 'zombie_zigzag.png'; enemyImages.titan.src = 'zombie_titan.png';
 
-        const enemyImages = {
-            normal: new Image(),
-            big: new Image(),
-            runner: new Image(),
-            zigzag: new Image(),
-            titan: new Image()
-        };
-        enemyImages.normal.src = 'zombie_normal.png';
-        enemyImages.big.src = 'zombie_big.png';
-        enemyImages.runner.src = 'zombie_runner.png';
-        enemyImages.zigzag.src = 'zombie_zigzag.png';
-        enemyImages.titan.src = 'zombie_titan.png';
-
-        // --- AUDIO SYSTEM ---
-        let bgmVolume = 1.0; 
-        let sfxVolume = 1.0; 
-        
-        const bgMusic = new Audio('music.mp3');
-        bgMusic.loop = true;
-        bgMusic.volume = bgmVolume * 0.3; 
-
-        const bossMusic = new Audio('boss_music.mp3');
-        bossMusic.loop = true;
-        bossMusic.volume = bgmVolume * 0.3;
-
-        const gameOverSound = new Audio('gameover.mp3');
-        gameOverSound.volume = sfxVolume * 0.2;
+        let bgmVolume = 1.0; let sfxVolume = 1.0; 
+        const bgMusic = new Audio('music.mp3'); bgMusic.loop = true; bgMusic.volume = 0.3; 
+        const bossMusic = new Audio('boss_music.mp3'); bossMusic.loop = true; bossMusic.volume = 0.3;
+        const gameOverSound = new Audio('gameover.mp3'); gameOverSound.volume = 0.2;
 
         const audioPool = []; for(let i=0; i<6; i++) { const a=new Audio('shoot.mp3'); a.volume=sfxVolume; audioPool.push(a); }
         let audioIdx = 0, lastSoundTime = 0;
         
         function playShootSound() {
             const now=Date.now(); if(now-lastSoundTime<80) return;
-            const s=audioPool[audioIdx]; 
-            s.volume = sfxVolume * 0.2; 
+            const s=audioPool[audioIdx]; s.volume = sfxVolume * 0.2; 
             if(s.paused||s.ended){s.play().catch(()=>{});}else{s.currentTime=0;s.play().catch(()=>{});}
             audioIdx=(audioIdx+1)%audioPool.length; lastSoundTime=now;
         }
 
         function forcePlay() { ui.rotateMsg.setAttribute('style', 'display: none !important'); }
 
-        // --- Settings Logic ---
         let wasPausedBeforeSettings = false;
         function toggleSettings() {
             const isOpen = !ui.settings.classList.contains('hidden');
-            if (isOpen) {
-                ui.settings.classList.add('hidden');
-                if (gameActive && !wasPausedBeforeSettings) isPaused = false;
-            } else {
-                wasPausedBeforeSettings = isPaused;
-                isPaused = true;
-                ui.settings.classList.remove('hidden');
-            }
+            if (isOpen) { ui.settings.classList.add('hidden'); if (gameActive && !wasPausedBeforeSettings) isPaused = false;
+            } else { wasPausedBeforeSettings = isPaused; isPaused = true; ui.settings.classList.remove('hidden'); }
         }
 
         function updateMusicVolume(val) {
-            bgmVolume = parseFloat(val);
-            bgMusic.volume = bgmVolume * 0.3; 
-            bossMusic.volume = bgmVolume * 0.3; 
+            bgmVolume = parseFloat(val); bgMusic.volume = bgmVolume * 0.3; bossMusic.volume = bgmVolume * 0.3; 
             document.getElementById('musicVolText').innerText = Math.round(bgmVolume * 100) + '%';
         }
 
         function updateSfxVolume(val) {
-            sfxVolume = parseFloat(val);
-            gameOverSound.volume = sfxVolume * 0.2;
+            sfxVolume = parseFloat(val); gameOverSound.volume = sfxVolume * 0.2;
             document.getElementById('sfxVolText').innerText = Math.round(sfxVolume * 100) + '%';
         }
 
         let gameActive=false, isPaused=false, score=0, gold=0, wave=1;
         let enemies=[], projectiles=[], particles=[], enemyProjectiles=[];
-        let hasWarnedPreBoss = false;
-        let animationId, regenInterval, autoSaveInterval;
-        let spawnTimer=0, enemiesSpawned=0, enemiesInWave=0, waveActive=false;
-        let bossesToSpawn = 0; 
-        
-        // Time Variables
-        let waveTimer = 0; 
-        let waveFrameCount = 0;
+        let animationId, regenInterval, autoSaveInterval, spawnTimer=0, waveActive=false, bossesToSpawn = 0, waveTimer = 0, waveFrameCount = 0;
 
         const player={x:0,y:0,r:20,color:'#3b82f6',speed:4, baseSpeed:4, slowStacks:0, slowTimer:0, hp:100,maxHp:100,lvl:1,xp:0,xpNeed:100,dmg:1,pSize:6,turrets:1,regen:5,fireRate:15,fireCooldown:0, frost: false, fire: false, crit: 0};
-        
         const keys={w:false,a:false,s:false,d:false};
-        let mouse={x:0,y:0,down:false};
-        let touchMove={id:null,startX:0,startY:0,vec:{x:0,y:0}};
-        let touchAim={id:null,startX:0,startY:0,angle:0,active:false};
+        let mouse={x:0,y:0,down:false}, touchMove={id:null,startX:0,startY:0,vec:{x:0,y:0}}, touchAim={id:null,startX:0,startY:0,angle:0,active:false};
         const isMobile=/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
         function resize() { 
-            if (window.visualViewport) {
-                canvas.width = window.visualViewport.width;
-                canvas.height = window.visualViewport.height;
-            } else {
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-            }
+            if (window.visualViewport) { canvas.width = window.visualViewport.width; canvas.height = window.visualViewport.height;
+            } else { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
             if(!gameActive){player.x=canvas.width/2;player.y=canvas.height/2;} 
         }
         window.addEventListener('resize', resize);
         if (window.visualViewport) { window.visualViewport.addEventListener('resize', resize); }
         resize();
 
-        window.addEventListener('keydown', e => {
-            if (e.code === 'Escape') toggleSettings();
-            updateKey(e.code, true);
-        });
+        window.addEventListener('keydown', e => { if (e.code === 'Escape') toggleSettings(); updateKey(e.code, true); });
         window.addEventListener('keyup', e => updateKey(e.code, false));
         function updateKey(code, state) {
             if (code === 'KeyW' || code === 'ArrowUp') keys.w = state;
@@ -542,430 +432,152 @@
         window.addEventListener('mousedown', ()=>mouse.down=true);
         window.addEventListener('mouseup', ()=>mouse.down=false);
 
-       function handleTouch(e) {
-    // 1. ป้องกันเบราว์เซอร์แย่งการทำงาน
-    if(e.cancelable) e.preventDefault(); 
-    
-    // 2. ปล่อยให้ปุ่มและช่องกรอกชื่อทำงานได้ (แก้บัคกดไม่ได้)
-    if(e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') return;
-    
-    // 3. เช็คความปลอดภัยของระบบหมุนจอ
-    if(ui.rotateMsg && ui.rotateMsg.offsetWidth > 0 && ui.rotateMsg.style.display !== 'none') return;
+        function handleTouch(e) {
+            // ✅ 1. ป้องกันเบราว์เซอร์แย่งการทำงาน (แก้บัคค้าง)
+            if(e.cancelable) e.preventDefault(); 
+            
+            // ✅ 2. ปล่อยให้ปุ่มและช่องกรอกชื่อทำงานได้
+            if(e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') return;
+            
+            // ✅ 3. เช็คระบบหมุนจอ
+            if(ui.rotateMsg && ui.rotateMsg.offsetWidth > 0 && ui.rotateMsg.style.display !== 'none') return;
 
-    if(!gameActive || isPaused) return; 
-    
-    if(e.touches.length === 0){ 
-        resetJoy(touchMove, ui.joyMove); 
-        resetJoy(touchAim, ui.joyAim); 
-        return; 
-    }
+            if(!gameActive || isPaused) return; 
+            
+            if(e.touches.length === 0){ resetJoy(touchMove, ui.joyMove); resetJoy(touchAim, ui.joyAim); return; }
 
-    let mF = false, aF = false;
-    for(let i = 0; i < e.touches.length; i++) {
-        const t = e.touches[i];
-        if(touchMove.id === t.identifier || (touchMove.id === null && t.clientX < window.innerWidth / 2 && touchAim.id !== t.identifier)){
-            if(touchMove.id === null){ 
-                touchMove.id = t.identifier; 
-                touchMove.startX = t.clientX; 
-                touchMove.startY = t.clientY; 
-                ui.joyMove.style.display = 'block'; 
-                ui.joyMove.style.left = (t.clientX - 40) + 'px'; 
-                ui.joyMove.style.top = (t.clientY - 40) + 'px'; 
+            let mF = false, aF = false;
+            for(let i = 0; i < e.touches.length; i++) {
+                const t = e.touches[i];
+                if(touchMove.id === t.identifier || (touchMove.id === null && t.clientX < window.innerWidth / 2 && touchAim.id !== t.identifier)){
+                    if(touchMove.id === null){ 
+                        touchMove.id = t.identifier; touchMove.startX = t.clientX; touchMove.startY = t.clientY; 
+                        ui.joyMove.style.display = 'block'; ui.joyMove.style.left = (t.clientX - 40) + 'px'; ui.joyMove.style.top = (t.clientY - 40) + 'px'; 
+                    }
+                    mF = true; updateJoy(t, touchMove, ui.joyMove, true);
+                }
+                if(touchAim.id === t.identifier || (touchAim.id === null && t.clientX > window.innerWidth / 2 && touchMove.id !== t.identifier)){
+                    if(touchAim.id === null){ 
+                        touchAim.id = t.identifier; touchAim.startX = t.clientX; touchAim.startY = t.clientY; 
+                        ui.joyAim.style.display = 'block'; ui.joyAim.style.left = (t.clientX - 40) + 'px'; ui.joyAim.style.top = (t.clientY - 40) + 'px'; touchAim.active = true; 
+                    }
+                    aF = true; updateJoy(t, touchAim, ui.joyAim, false);
+                }
             }
-            mF = true; updateJoy(t, touchMove, ui.joyMove, true);
+            if(!mF) resetJoy(touchMove, ui.joyMove); 
+            if(!aF) resetJoy(touchAim, ui.joyAim);
         }
-        if(touchAim.id === t.identifier || (touchAim.id === null && t.clientX > window.innerWidth / 2 && touchMove.id !== t.identifier)){
-            if(touchAim.id === null){ 
-                touchAim.id = t.identifier; 
-                touchAim.startX = t.clientX; 
-                touchAim.startY = t.clientY; 
-                ui.joyAim.style.display = 'block'; 
-                ui.joyAim.style.left = (t.clientX - 40) + 'px'; 
-                ui.joyAim.style.top = (t.clientY - 40) + 'px'; 
-                touchAim.active = true; 
-            }
-            aF = true; updateJoy(t, touchAim, ui.joyAim, false);
-        }
-    }
-    if(!mF) resetJoy(touchMove, ui.joyMove); 
-    if(!aF) resetJoy(touchAim, ui.joyAim);
-}
+
         function updateJoy(t, s, el, m) {
-    // 1. หาจุดกึ่งกลางของวงกลมจอยสติ๊กที่อยู่บนหน้าจอ
-    const rect = el.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-    
-    // 2. คำนวณระยะห่างระหว่าง "นิ้ว" กับ "กึ่งกลางจอย"
-    const dx = t.clientX - centerX;
-    const dy = t.clientY - centerY;
-    const d = Math.hypot(dx, dy);
-    const max = rect.width / 2; 
-    const a = Math.atan2(dy, dx);
-    const l = Math.min(d, max);
-    
-    // 3. สั่งให้หัวจอยขยับตามนิ้ว
-    el.querySelector('.joystick-stick').style.transform = `translate(calc(-50% + ${Math.cos(a) * l}px), calc(-50% + ${Math.sin(a) * l}px))`;
-    
-    // 4. ส่งค่าไปควบคุมตัวละคร
-    if (m) {
-        s.vec.x = Math.cos(a) * (d > 5 ? 1 : 0);
-        s.vec.y = Math.sin(a) * (d > 5 ? 1 : 0);
-    } else {
-        s.angle = a;
-    }
-}
+            const rect = el.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            const dx = t.clientX - centerX, dy = t.clientY - centerY, d = Math.hypot(dx, dy), max = rect.width / 2, a = Math.atan2(dy, dx), l = Math.min(d, max);
+            el.querySelector('.joystick-stick').style.transform = `translate(calc(-50% + ${Math.cos(a) * l}px), calc(-50% + ${Math.sin(a) * l}px))`;
+            if (m) { s.vec.x = Math.cos(a) * (d > 5 ? 1 : 0); s.vec.y = Math.sin(a) * (d > 5 ? 1 : 0); } else { s.angle = a; }
+        }
         function resetJoy(s,el){ s.id=null; s.vec={x:0,y:0}; s.active=false; el.style.display='none'; }
         window.addEventListener('touchstart', handleTouch, {passive:false}); window.addEventListener('touchmove', handleTouch, {passive:false}); window.addEventListener('touchend', handleTouch);
 
         function createFloatingText(text, x, y, color) {
-            const el = document.createElement('div'); el.className = 'floating-text'; el.innerText = text;
-            el.style.left = x + 'px'; el.style.top = y + 'px'; el.style.color = color;
+            const el = document.createElement('div'); el.className = 'floating-text'; el.innerText = text; el.style.left = x + 'px'; el.style.top = y + 'px'; el.style.color = color;
             ui.float.appendChild(el); setTimeout(() => el.remove(), 1000);
         }
 
         function applySlowLogic() {
-            player.slowStacks++;
-            if (player.slowStacks > 5) player.slowStacks = 1; 
-            
-            player.slowTimer = 180; 
-            player.speed = player.baseSpeed * (1 - (player.slowStacks * 0.15));
-            
+            player.slowStacks++; if (player.slowStacks > 5) player.slowStacks = 1; 
+            player.slowTimer = 180; player.speed = player.baseSpeed * (1 - (player.slowStacks * 0.15));
             createFloatingText("Slowed! x" + player.slowStacks, player.x, player.y-40, '#60a5fa');
         }
 
-        function formatTime(seconds) {
-            const m = Math.floor(seconds / 60);
-            const s = seconds % 60;
-            return `${m}:${s < 10 ? '0' : ''}${s}`;
+        function formatTime(seconds) { const m = Math.floor(seconds / 60), s = seconds % 60; return `${m}:${s < 10 ? '0' : ''}${s}`; }
+
+        function openShop() {
+            if (gameActive && waveActive && enemies.length > 0) { createFloatingText("ร้านค้าเปิดเฉพาะก่อนเจอบอส!", player.x, player.y - 50, '#ef4444'); return; }
+            if ((wave + 1) % 5 !== 0 && ui.shop.classList.contains('hidden')) { createFloatingText("ร้านค้าปิดอยู่", canvas.width / 2, canvas.height / 2, '#facc15'); return; }
+            if (ui.shop.classList.contains('hidden')) { wasPausedBeforeSettings = isPaused; isPaused = true; ui.shop.classList.remove('hidden'); }
+            ui.shopGold.innerText = gold;
+            const fireItem = document.getElementById('shop-fire'); fireItem.classList.remove('locked', 'owned'); fireItem.querySelector('.shop-cost').innerText = "800 G";
+            if (player.frost) fireItem.classList.add('locked'); else if (player.fire) { fireItem.classList.add('owned'); fireItem.querySelector('.shop-cost').innerText = "OWNED"; }
+            const resetItem = document.getElementById('shop-reset'); resetItem.classList.remove('locked'); if (!player.fire && !player.frost) resetItem.classList.add('locked'); 
         }
-
-function openShop() {
- // เช็ค 1: ถ้ายังยิงกันไม่จบ ห้ามเปิด
-    if (gameActive && waveActive && enemies.length > 0) {
-        createFloatingText("ร้านค้าเปิดเฉพาะก่อนเจอบอส!", player.x, player.y - 50, '#ef4444');
-        return; 
-    }
-
-    // เช็ค 2: ถ้าไม่ใช่เวฟก่อนบอส (เช่น จบเวฟ 1, 2, 3) ห้ามเปิด!
-    // สูตร: (wave + 1) % 5 !== 0 แปลว่า เวฟหน้าไม่ใช่บอส
-    // และเพิ่มเงื่อนไข !ui.shop... เพื่อให้ถ้าร้านเปิดอยู่แล้ว (ตอนซื้อของ) จะได้ไม่บั๊ก
-    if ((wave + 1) % 5 !== 0 && ui.shop.classList.contains('hidden')) {
-        // >>> แจ้งเตือนกลางหน้าจอ ตามที่ขอ <<<
-        createFloatingText("ร้านค้าปิดอยู่", canvas.width / 2, canvas.height / 2, '#facc15');
-        return;
-    }
-
-    // --- ส่วนการเปิดร้าน (เหมือนเดิม) ---
-    if (ui.shop.classList.contains('hidden')) {
-        wasPausedBeforeSettings = isPaused;
-        isPaused = true;
-        ui.shop.classList.remove('hidden');
-    }
-
-    ui.shopGold.innerText = gold;
-
-            // --- แก้ไขจุดที่ 2: Logic การแสดงผลปุ่ม Fire Shot ---
-            const fireItem = document.getElementById('shop-fire'); // อ้างอิง Element
-            
-            // รีเซ็ต Class และ Text ก่อนเช็คเงื่อนไข
-            fireItem.classList.remove('locked', 'owned'); 
-            fireItem.querySelector('.shop-cost').innerText = "800 G"; // คืนค่าราคาเดิมเผื่อไว้
-
-            if (player.frost) {
-                // กรณีเลือกสายน้ำแข็งไปแล้ว -> ล็อค
-                fireItem.classList.add('locked');
-            } 
-            else if (player.fire) {
-                // กรณีซื้อไฟไปแล้ว -> ขึ้นว่า OWNED
-                fireItem.classList.add('owned'); 
-                fireItem.querySelector('.shop-cost').innerText = "OWNED"; // เปลี่ยนราคาเป็นคำว่า OWNED
-            }
-const resetItem = document.getElementById('shop-reset');
-    if (resetItem) {
-        resetItem.classList.remove('locked'); 
-        if (!player.fire && !player.frost) {
-             resetItem.classList.add('locked'); 
-        }
-    } // ปิด if
-} //  ต้องมีปีกกานี้เพื่อปิด function openShop()
         
         function closeShop() {
-           ui.shop.classList.add('hidden');
-    if (gameActive && !wasPausedBeforeSettings) isPaused = false;
-    
-    // --- แก้ไขจุดที่ 4: ปิดร้านแล้วไปลุยบอส ---
-    // เช็คว่าถ้าเราอยู่ในสถานะพักยก (Wave Active เป็น false) และเป็นเวฟก่อนบอส
-    if (!waveActive && enemies.length === 0 && (wave + 1) % 5 === 0) {
-         wave++; // เพิ่มเวฟ (เข้าสู่เวฟ 5, 10...)
-         ui.announce.innerText = "BOSS COMING!"; 
-         ui.announce.style.opacity = 1; 
-         startWaveCountdown(3); // นับถอยหลังลุยบอส
-            }
+            ui.shop.classList.add('hidden'); if (gameActive && !wasPausedBeforeSettings) isPaused = false;
+            if (!waveActive && enemies.length === 0 && (wave + 1) % 5 === 0) { wave++; ui.announce.innerText = "BOSS COMING!"; ui.announce.style.opacity = 1; startWaveCountdown(3); }
         }
 
-function buyItem(id) {
-            let cost = 0;
-            if(id === 'heal') cost = 100;
-            else if(id === 'dmg') cost = 300;
-            else if(id === 'fire_shot') cost = 800; 
-            else if(id === 'crit') cost = 400;
-            else if(id === 'reset') cost = 1000;
-
-            // --- แก้ไขจุดที่ 1: เช็คว่ามีของอยู่แล้วหรือเปล่า ---
-            // ถ้าจะซื้อ Fire Shot แต่มี Frost (ล็อค) หรือ มี Fire อยู่แล้ว (ซื้อแล้ว) -> ให้ return ออกไปเลย
-            if (id === 'fire_shot' && (player.frost || player.fire)) {
-                return; 
-            }
-    // 👇 --- 2. วางโค้ดชุดนี้เพิ่มครับ (ป้องกันเงินลดฟรี) ---
-            if (id === 'reset' && !player.fire && !player.frost) {
-                createFloatingText("ไม่มีสกิลให้รีเซ็ต!", canvas.width/2, canvas.height/2, '#9ca3af');
-                return; 
-            }
-            // ---------------------------------------------
-
-            if (gold >= cost) {
-                gold -= cost;
-                ui.shopGold.innerText = gold;
-                updateHud();
-                
-                if(id === 'heal') { 
-                    player.hp = Math.min(player.hp + 50, player.maxHp); 
-                    createFloatingText("+50 HP", canvas.width/2, canvas.height/2, '#22c55e'); 
-                }
-                else if(id === 'dmg') { 
-                    player.dmg += 1; 
-                    createFloatingText("+1 DMG", canvas.width/2, canvas.height/2, '#facc15'); 
-                }
-                else if(id === 'fire_shot') { 
-                    player.fire = true; 
-                    createFloatingText("FIRE SHOT EQUIPPED!", canvas.width/2, canvas.height/2, '#ef4444');
-                    // อัปเดตร้านค้าทันทีเพื่อให้ปุ่มเปลี่ยนสถานะ
-                    openShop(); 
-                }
-                else if(id === 'crit') { 
-                    player.crit = Math.min(1.0, player.crit + 0.05); 
-                    createFloatingText("+5% Crit", canvas.width/2, canvas.height/2, '#ef4444'); 
-                }
-                else if(id === 'reset') {
-                player.fire = false;
-                player.frost = false;  // <--- บรรทัดนี้แหละที่ช่วยปลดล็อค!
-                createFloatingText("SKILLS RESET!", canvas.width/2, canvas.height/2, '#d8b4fe');
-                openShop(); 
-            }
-            } else {
-                // ... (ส่วนตัวหนังสือสีแดงเมื่อเงินไม่พอ คงเดิมไว้) ...
-                const originalColor = ui.shopGold.style.color;
-                ui.shopGold.style.color = 'red';
-                setTimeout(() => ui.shopGold.style.color = originalColor, 200);
-            }
+        function buyItem(id) {
+            let cost = 0; if(id === 'heal') cost = 100; else if(id === 'dmg') cost = 300; else if(id === 'fire_shot') cost = 800; else if(id === 'crit') cost = 400; else if(id === 'reset') cost = 1000;
+            if (id === 'fire_shot' && (player.frost || player.fire)) return;
+            if (id === 'reset' && !player.fire && !player.frost) { createFloatingText("ไม่มีสกิลให้รีเซ็ต!", canvas.width/2, canvas.height/2, '#9ca3af'); return; }
+            if (gold >= cost) { gold -= cost; ui.shopGold.innerText = gold; updateHud();
+                if(id === 'heal') { player.hp = Math.min(player.hp + 50, player.maxHp); createFloatingText("+50 HP", canvas.width/2, canvas.height/2, '#22c55e'); }
+                else if(id === 'dmg') { player.dmg += 1; createFloatingText("+1 DMG", canvas.width/2, canvas.height/2, '#facc15'); }
+                else if(id === 'fire_shot') { player.fire = true; createFloatingText("FIRE SHOT EQUIPPED!", canvas.width/2, canvas.height/2, '#ef4444'); openShop(); }
+                else if(id === 'crit') { player.crit = Math.min(1.0, player.crit + 0.05); createFloatingText("+5% Crit", canvas.width/2, canvas.height/2, '#ef4444'); }
+                else if(id === 'reset') { player.fire = false; player.frost = false; createFloatingText("SKILLS RESET!", canvas.width/2, canvas.height/2, '#d8b4fe'); openShop(); }
+            } else { const originalColor = ui.shopGold.style.color; ui.shopGold.style.color = 'red'; setTimeout(() => ui.shopGold.style.color = originalColor, 200); }
         }
 
         function animate() {
-if(!gameActive) return; animationId=requestAnimationFrame(animate);
-
-    // --- แก้ไข: ถ้าหยุดเกม ให้หยุดทำงานเลย (ภาพจะค้างไว้ เห็นมอนสเตอร์ครบ) ---
-    if(isPaused) return; 
-    // -----------------------------------------------------------------
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height); // ค่อยลบจอถ้าเกมเล่นอยู่ปกติ
-
+            if(!gameActive) return; animationId=requestAnimationFrame(animate);
+            if(isPaused) return; 
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
             if(waveActive) {
-                waveFrameCount++;
-                if(waveFrameCount >= 60) { 
-                    waveTimer--;
-                    waveFrameCount = 0;
-                    if(waveTimer < 0) waveTimer = 0;
-                    ui.timer.innerText = formatTime(waveTimer);
-                }
-
-                if (waveTimer > 0) {
-                    spawnTimer++; 
-                    const spawnRate = Math.max(20, 60 - wave * 2); 
-                    if(spawnTimer > spawnRate) { 
-                        spawnEnemy(); 
-                        spawnTimer=0; 
-                    }
-                } 
-                else if (enemies.length === 0) {
-    waveActive = false;
-    
-    // เช็คว่า "เวฟหน้า" คือบอสหรือเปล่า? (เช่น จบเวฟ 4, 9, 14)
-    if ((wave + 1) % 5 === 0) {
-        
-        // >>> เพิ่มบรรทัดนี้: ปลดล็อกปุ่มร้านค้า (ให้กลับมาเป็นสีสด) <<<
-        document.getElementById('shop-btn').classList.remove('btn-disabled'); 
-
-        ui.announce.innerText = "SAFE ZONE UNLOCKED!";
-        ui.announce.style.opacity = 1;
-        
-        setTimeout(() => {
-            ui.announce.style.opacity = 0;
-            openShop(); 
-        }, 2000);
-    } 
-    // ถ้าจบเวฟบอส (เวฟ 5, 10, 15)
-    else if (wave % 5 === 0) {
-        ui.announce.innerText = "BOSS DEFEATED!";
-        ui.announce.style.opacity = 1;
-        
-        // จบบอสแล้วไปต่อเลย ไม่ต้องเข้าร้าน (หรือจะเข้าก็ได้แล้วแต่ดีไซน์ แต่ตามโจทย์คือให้ไปต่อ)
-        wave++; 
-        startWaveCountdown(3);
-    } 
-    // เวฟธรรมดาทั่วไป
-    else {
-        wave++;
-        ui.announce.innerText = "WAVE CLEAR!"; 
-        ui.announce.style.opacity = 1; 
-        startWaveCountdown(3);
-                    }
+                waveFrameCount++; if(waveFrameCount >= 60) { waveTimer--; waveFrameCount = 0; if(waveTimer < 0) waveTimer = 0; ui.timer.innerText = formatTime(waveTimer); }
+                if (waveTimer > 0) { spawnTimer++; const spawnRate = Math.max(20, 60 - wave * 2); if(spawnTimer > spawnRate) { spawnEnemy(); spawnTimer=0; }
+                } else if (enemies.length === 0) { waveActive = false;
+                    if ((wave + 1) % 5 === 0) { document.getElementById('shop-btn').classList.remove('btn-disabled'); ui.announce.innerText = "SAFE ZONE UNLOCKED!"; ui.announce.style.opacity = 1; setTimeout(() => { ui.announce.style.opacity = 0; openShop(); }, 2000);
+                    } else if (wave % 5 === 0) { ui.announce.innerText = "BOSS DEFEATED!"; ui.announce.style.opacity = 1; wave++; startWaveCountdown(3);
+                    } else { wave++; ui.announce.innerText = "WAVE CLEAR!"; ui.announce.style.opacity = 1; startWaveCountdown(3); }
                 }
             }
 
-            if(player.slowTimer > 0) {
-                player.slowTimer--;
-                if(player.slowTimer <= 0) {
-                    player.slowStacks = 0;
-                    player.speed = player.baseSpeed;
-                    createFloatingText("Speed Recover!", player.x, player.y-50, '#3b82f6');
-                }
-            }
+            if(player.slowTimer > 0) { player.slowTimer--; if(player.slowTimer <= 0) { player.slowStacks = 0; player.speed = player.baseSpeed; createFloatingText("Speed Recover!", player.x, player.y-50, '#3b82f6'); } }
 
             let mx=0, my=0; if(keys.w)my--; if(keys.s)my++; if(keys.a)mx--; if(keys.d)mx++;
             if(touchMove.id!==null){ mx=touchMove.vec.x; my=touchMove.vec.y; }
-            if(mx!==0||my!==0){ 
-                if(touchMove.id===null){const l=Math.hypot(mx,my);mx/=l;my/=l;} 
-                player.x+=mx*player.speed; 
-                player.y+=my*player.speed; 
-                const bottomPadding = isMobile ? 40 : 0;
-                player.x=Math.max(player.r,Math.min(canvas.width-player.r,player.x)); 
-                player.y=Math.max(player.r,Math.min(canvas.height-player.r-bottomPadding,player.y)); 
-            }
+            if(mx!==0||my!==0){ if(touchMove.id===null){const l=Math.hypot(mx,my);mx/=l;my/=l;} player.x+=mx*player.speed; player.y+=my*player.speed; const bottomPadding = isMobile ? 40 : 0; player.x=Math.max(player.r,Math.min(canvas.width-player.r,player.x)); player.y=Math.max(player.r,Math.min(canvas.height-player.r-bottomPadding,player.y)); }
 
             if(player.fireCooldown>0) player.fireCooldown--;
-            let wantShoot=false, aimAngle=0;
-            if(mouse.down){ wantShoot=true; aimAngle=Math.atan2(mouse.y-player.y, mouse.x-player.x); }
-            else if(touchAim.active){ wantShoot=true; aimAngle=touchAim.angle; }
+            let wantShoot=false, aimAngle=0; if(mouse.down){ wantShoot=true; aimAngle=Math.atan2(mouse.y-player.y, mouse.x-player.x); } else if(touchAim.active){ wantShoot=true; aimAngle=touchAim.angle; }
             if(wantShoot && player.fireCooldown<=0){ shoot(aimAngle); player.fireCooldown=player.fireRate; }
 
-            for(let i = particles.length - 1; i >= 0; i--) {
-                const p = particles[i];
-                if(p.a <= 0) particles.splice(i, 1);
-                else p.update();
-            }
-
-            for(let i = projectiles.length - 1; i >= 0; i--) {
-                const p = projectiles[i];
-                p.update();
-                if(p.x<0||p.x>canvas.width||p.y<0||p.y>canvas.height||p.hits<=0) {
-                    projectiles.splice(i, 1);
-                }
-            }
+            for(let i = particles.length - 1; i >= 0; i--) { const p = particles[i]; if(p.a <= 0) particles.splice(i, 1); else p.update(); }
+            for(let i = projectiles.length - 1; i >= 0; i--) { const p = projectiles[i]; p.update(); if(p.x<0||p.x>canvas.width||p.y<0||p.y>canvas.height||p.hits<=0) projectiles.splice(i, 1); }
             
             for(let i = enemyProjectiles.length - 1; i >= 0; i--) {
-                const p = enemyProjectiles[i];
-                p.update();
-                if(p.x<0||p.x>canvas.width||p.y<0||p.y>canvas.height) {
-                    enemyProjectiles.splice(i,1);
-                } else if(Math.hypot(p.x-player.x, p.y-player.y) < p.r + player.r) {
-                    player.hp -= p.dmg;
-                    if (p.effect === 'slow') { applySlowLogic(); }
-                    updateHud();
-                    createExplosion(player.x, player.y, p.color); 
-                    enemyProjectiles.splice(i,1);
-                    if(player.hp<=0) gameOver();
-                }
+                const p = enemyProjectiles[i]; p.update();
+                if(p.x<0||p.x>canvas.width||p.y<0||p.y>canvas.height) { enemyProjectiles.splice(i,1);
+                } else if(Math.hypot(p.x-player.x, p.y-player.y) < p.r + player.r) { player.hp -= p.dmg; if (p.effect === 'slow') applySlowLogic(); updateHud(); createExplosion(player.x, player.y, p.color); enemyProjectiles.splice(i,1); if(player.hp<=0) gameOver(); }
             }
 
             for(let i = enemies.length - 1; i >= 0; i--) {
-                const e = enemies[i];
-                e.update();
-                
-                if(Math.hypot(player.x-e.x, player.y-e.y)-e.r-player.r < 1) { 
-                    player.hp -= 15; 
-                    if (e.type === 'big') { applySlowLogic(); }
-                    enemies.splice(i,1); 
-                    updateHud(); 
-                    createExplosion(e.x,e.y,'#ef4444'); 
-                    if(player.hp<=0) gameOver();
-                    continue; 
-                }
-                
+                const e = enemies[i]; e.update();
+                if(Math.hypot(player.x-e.x, player.y-e.y)-e.r-player.r < 1) { player.hp -= 15; if (e.type === 'big') applySlowLogic(); enemies.splice(i,1); updateHud(); createExplosion(e.x,e.y,'#ef4444'); if(player.hp<=0) gameOver(); continue; }
                 for(let j = projectiles.length - 1; j >= 0; j--) {
                     const p = projectiles[j];
                     if(!p.hitList.includes(e) && Math.hypot(p.x-e.x, p.y-e.y)-e.r-p.r < 1) {
-                        if(e.type === 'runner' && wave >= 20 && Math.random() < 0.3) {
-                            createFloatingText("Miss!", e.x, e.y - 30, '#fbbf24');
-                            p.hits = 0; 
-                            continue;
-                        }
-                        
-                        let dmg = player.dmg;
-                        if(e.type === 'titan' && wave >= 15) {
-                            dmg *= 0.5; createExplosion(p.x, p.y, '#888');
-                        } else {
-                            createExplosion(p.x, p.y, e.c);
-                        }
-                        
-                        let isCrit = false;
-                        if (Math.random() < player.crit) {
-                            dmg *= 2; 
-                            isCrit = true;
-                        }
-
-                        e.hp -= dmg; 
-                        p.hits--; 
-                        p.hitList.push(e);
-                        
+                        if(e.type === 'runner' && wave >= 20 && Math.random() < 0.3) { createFloatingText("Miss!", e.x, e.y - 30, '#fbbf24'); p.hits = 0; continue; }
+                        let dmg = player.dmg; if(e.type === 'titan' && wave >= 15) { dmg *= 0.5; createExplosion(p.x, p.y, '#888'); } else { createExplosion(p.x, p.y, e.c); }
+                        let isCrit = Math.random() < player.crit; if (isCrit) dmg *= 2;
+                        e.hp -= dmg; p.hits--; p.hitList.push(e);
                         if(isCrit) createFloatingText("CRIT!", e.x, e.y - 40, '#fbbf24');
-                        if(player.frost) e.slowTimer = 180;
-                        if(player.fire && Math.random() < 0.25) e.burnTimer = 180; // Burn chance
-
+                        if(player.frost) e.slowTimer = 180; if(player.fire && Math.random() < 0.25) e.burnTimer = 180;
                         if(e.hp <= 0){ 
-                            if (e.type === 'runner' && !e.isChild) {
-                                for(let k=0; k<2; k++) {
-                                    let child = new Enemy(e.x+(Math.random()*30-15), e.y+(Math.random()*30-15), e.r*0.7, e.c, e.maxHp*0.6, e.spdMult, 'runner');
-                                    child.isChild = true; 
-                                    enemies.push(child);
-                                }
-                            }
-                            
-                            let dropGold = 0;
-                            let dropScore = 1;
-                            
-                            if (e.type === 'normal') {
-                                dropScore = 1;
-                                if(Math.random() < 0.25) dropGold = Math.floor(Math.random() * 3) + 1;
-                            } else if (e.type === 'runner' || e.type === 'zigzag') {
-                                dropScore = 2;
-                                if(Math.random() < 0.40) dropGold = Math.floor(Math.random() * 4) + 3;
-                            } else if (e.type === 'big') {
-                                dropScore = 5;
-                                dropGold = Math.floor(Math.random() * 11) + 15; 
-                            } else if (e.type === 'titan') {
-                                dropScore = 50;
-                                dropGold = Math.floor(Math.random() * 201) + 300; 
-                            }
-
-                            score += dropScore;
-                            if(dropGold > 0) {
-                                gold += dropGold;
-                                createFloatingText(`+${dropGold}G`, e.x, e.y-20, '#facc15');
-                            }
-                            gainXp(e.r > 30 ? 50 : 20); 
-                            
-                            enemies.splice(i,1); 
-                            break; 
-                        } else { 
-                            const kb = Math.atan2(e.y-player.y, e.x-player.x); 
-                            e.x += Math.cos(kb)*6; 
-                            e.y += Math.sin(kb)*6; 
-                        }
+                            if (e.type === 'runner' && !e.isChild) { for(let k=0; k<2; k++) { let child = new Enemy(e.x+(Math.random()*30-15), e.y+(Math.random()*30-15), e.r*0.7, e.c, e.maxHp*0.6, e.spdMult, 'runner'); child.isChild = true; enemies.push(child); } }
+                            let dropGold = 0, dropScore = 1;
+                            if (e.type === 'normal') { dropScore = 1; if(Math.random() < 0.25) dropGold = Math.floor(Math.random() * 3) + 1;
+                            } else if (e.type === 'runner' || e.type === 'zigzag') { dropScore = 2; if(Math.random() < 0.40) dropGold = Math.floor(Math.random() * 4) + 3;
+                            } else if (e.type === 'big') { dropScore = 5; dropGold = Math.floor(Math.random() * 11) + 15; 
+                            } else if (e.type === 'titan') { dropScore = 50; dropGold = Math.floor(Math.random() * 201) + 300; }
+                            score += dropScore; if(dropGold > 0) { gold += dropGold; createFloatingText(`+${dropGold}G`, e.x, e.y-20, '#facc15'); }
+                            gainXp(e.r > 30 ? 50 : 20); enemies.splice(i,1); break; 
+                        } else { const kb = Math.atan2(e.y-player.y, e.x-player.x); e.x += Math.cos(kb)*6; e.y += Math.sin(kb)*6; }
                     }
                 }
             }
-            
             drawStatic(aimAngle);
         }
 
@@ -973,117 +585,31 @@ if(!gameActive) return; animationId=requestAnimationFrame(animate);
         
         class EnemyProjectile {
             constructor(x,y,targetX,targetY, speed, dmg, color, effect) {
-                this.x=x; this.y=y;
-                const angle = Math.atan2(targetY - y, targetX - x);
-                this.vx = Math.cos(angle) * speed; 
-                this.vy = Math.sin(angle) * speed;
-                this.r = 6;
-                this.dmg = dmg;
-                this.color = color || '#a855f7'; 
-                this.effect = effect || null;
+                this.x=x; this.y=y; const angle = Math.atan2(targetY - y, targetX - x); this.vx = Math.cos(angle) * speed; this.vy = Math.sin(angle) * speed; this.r = 6; this.dmg = dmg; this.color = color || '#a855f7'; this.effect = effect || null;
             }
-            update() {
-                this.x += this.vx; this.y += this.vy;
-                ctx.beginPath(); ctx.arc(this.x, this.y, this.r, 0, Math.PI*2);
-                ctx.fillStyle = this.color; 
-                ctx.fill();
-            }
+            update() { this.x += this.vx; this.y += this.vy; ctx.beginPath(); ctx.arc(this.x, this.y, this.r, 0, Math.PI*2); ctx.fillStyle = this.color; ctx.fill(); }
         }
 
         class Projectile { 
-            constructor(x,y,a){
-                this.x=x;this.y=y;this.vx=Math.cos(a)*12;this.vy=Math.sin(a)*12;this.r=player.pSize;
-                this.hits=1; 
-                this.hitList=[];
-                this.frost = player.frost;
-                this.fire = player.fire;
-            } 
-            update(){
-                this.x+=this.vx;this.y+=this.vy;
-                ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);
-                if (this.fire) ctx.fillStyle = '#ef4444'; // Red
-                else if (this.frost) ctx.fillStyle = '#22d3ee'; // Cyan
-                else ctx.fillStyle = '#fbbf24'; // Gold
-                ctx.fill();
-            } 
+            constructor(x,y,a){ this.x=x;this.y=y;this.vx=Math.cos(a)*12;this.vy=Math.sin(a)*12;this.r=player.pSize; this.hits=1; this.hitList=[]; this.frost = player.frost; this.fire = player.fire; } 
+            update(){ this.x+=this.vx;this.y+=this.vy; ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2); if (this.fire) ctx.fillStyle = '#ef4444'; else if (this.frost) ctx.fillStyle = '#22d3ee'; else ctx.fillStyle = '#fbbf24'; ctx.fill(); } 
         }
         
         class Enemy { 
-            constructor(x,y,r,c,hp,spd,type){
-                this.x=x;this.y=y;this.r=r;this.c=c;this.hp=hp;this.maxHp=hp;this.spdMult=spd;
-                this.type=type; this.tick=Math.random()*100;
-                this.shootTimer = Math.random() * 100 + 50; 
-                this.isChild = false; 
-                this.slowTimer = 0;
-                this.burnTimer = 0;
-            } 
+            constructor(x,y,r,c,hp,spd,type){ this.x=x;this.y=y;this.r=r;this.c=c;this.hp=hp;this.maxHp=hp;this.spdMult=spd; this.type=type; this.tick=Math.random()*100; this.shootTimer = Math.random() * 100 + 50; this.isChild = false; this.slowTimer = 0; this.burnTimer = 0; } 
             update(){
-                // Burn Logic
-                if(this.burnTimer > 0) {
-                    this.burnTimer--;
-                    if(this.burnTimer % 30 === 0) { // Tick every 0.5s
-                        this.hp -= 2; 
-                        createExplosion(this.x, this.y, '#ef4444');
-                        if(this.hp <= 0) return; // Die check elsewhere
-                    }
-                }
-
-                if (this.type === 'zigzag') {
-                    this.tick += 0.1; 
-                    this.shootTimer--;
-                    if (this.shootTimer <= 0) {
-                        enemyProjectiles.push(new EnemyProjectile(this.x, this.y, player.x, player.y, 8, 10, '#a855f7'));
-                        this.shootTimer = 100; 
-                    }
-                }
-                else if (this.type === 'normal' && wave > 4) {
-                     this.shootTimer--;
-                     if (this.shootTimer <= 0) {
-                        enemyProjectiles.push(new EnemyProjectile(this.x, this.y, player.x, player.y, 4, 5, '#a855f7'));
-                        this.shootTimer = 150; 
-                     }
-                }
-                else if (this.type === 'big') {
-                    this.shootTimer--;
-                    if (this.shootTimer <= 0) {
-                        enemyProjectiles.push(new EnemyProjectile(this.x, this.y, player.x, player.y, 6, 8, '#3b82f6', 'slow'));
-                        this.shootTimer = 120;
-                    }
-                }
-
-                let a = Math.atan2(player.y-this.y, player.x-this.x);
-                if(this.type === 'zigzag') { a += Math.sin(this.tick) * 0.5; }
-                
-                let s = (1.5+wave*0.1)*this.spdMult; 
-                if (this.slowTimer > 0) {
-                    s *= 0.5; 
-                    this.slowTimer--;
-                }
-
-                this.x+=Math.cos(a)*s; this.y+=Math.sin(a)*s; 
-
-                ctx.save();
-                ctx.translate(this.x, this.y);
-                if (player.x < this.x) { ctx.scale(-1, 1); }
-
-                const size = this.r * 2.5; 
-                const img = enemyImages[this.type];
-                
-                if (img && img.complete && img.naturalHeight !== 0) {
-                    ctx.drawImage(img, -size/2, -size/2, size, size);
-                } else {
-                    ctx.beginPath(); ctx.arc(0, 0, this.r, 0, Math.PI*2); ctx.fillStyle = this.c; ctx.fill();
-                }
+                if(this.burnTimer > 0) { this.burnTimer--; if(this.burnTimer % 30 === 0) { this.hp -= 2; createExplosion(this.x, this.y, '#ef4444'); if(this.hp <= 0) return; } }
+                if (this.type === 'zigzag') { this.tick += 0.1; this.shootTimer--; if (this.shootTimer <= 0) { enemyProjectiles.push(new EnemyProjectile(this.x, this.y, player.x, player.y, 8, 10, '#a855f7')); this.shootTimer = 100; }
+                } else if (this.type === 'normal' && wave > 4) { this.shootTimer--; if (this.shootTimer <= 0) { enemyProjectiles.push(new EnemyProjectile(this.x, this.y, player.x, player.y, 4, 5, '#a855f7')); this.shootTimer = 150; }
+                } else if (this.type === 'big') { this.shootTimer--; if (this.shootTimer <= 0) { enemyProjectiles.push(new EnemyProjectile(this.x, this.y, player.x, player.y, 6, 8, '#3b82f6', 'slow')); this.shootTimer = 120; } }
+                let a = Math.atan2(player.y-this.y, player.x-this.x); if(this.type === 'zigzag') a += Math.sin(this.tick) * 0.5;
+                let s = (1.5+wave*0.1)*this.spdMult; if (this.slowTimer > 0) { s *= 0.5; this.slowTimer--; }
+                this.x+=Math.cos(a)*s; this.y+=Math.sin(a)*s; ctx.save(); ctx.translate(this.x, this.y); if (player.x < this.x) ctx.scale(-1, 1);
+                const size = this.r * 2.5, img = enemyImages[this.type];
+                if (img && img.complete && img.naturalHeight !== 0) ctx.drawImage(img, -size/2, -size/2, size, size); else { ctx.beginPath(); ctx.arc(0, 0, this.r, 0, Math.PI*2); ctx.fillStyle = this.c; ctx.fill(); }
                 ctx.restore();
-
-                if(this.hp<this.maxHp){ 
-                    ctx.fillStyle='red';ctx.fillRect(this.x-10,this.y-this.r-8,20,3); 
-                    ctx.fillStyle='#22c55e';ctx.fillRect(this.x-10,this.y-this.r-8,20*(this.hp/this.maxHp),3); 
-                }
-                if(this.type === 'titan' && wave >= 15) { 
-                    ctx.beginPath(); ctx.arc(this.x, this.y, this.r+2, 0, Math.PI*2); 
-                    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke(); 
-                }
+                if(this.hp<this.maxHp){ ctx.fillStyle='red';ctx.fillRect(this.x-10,this.y-this.r-8,20,3); ctx.fillStyle='#22c55e';ctx.fillRect(this.x-10,this.y-this.r-8,20*(this.hp/this.maxHp),3); }
+                if(this.type === 'titan' && wave >= 15) { ctx.beginPath(); ctx.arc(this.x, this.y, this.r+2, 0, Math.PI*2); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke(); }
             } 
         }
 
@@ -1093,46 +619,19 @@ if(!gameActive) return; animationId=requestAnimationFrame(animate);
             let angle = aimAngle || 0;
             if(!mouse.down && !touchAim.active && touchMove.id !== null) angle = Math.atan2(touchMove.vec.y, touchMove.vec.x);
             else if (!mouse.down && !touchAim.active) angle = -Math.PI/2;
-
             const spread = 0.08;
-            for(let i=0; i<player.turrets; i++) {
-                const off=(i-(player.turrets-1)/2)*spread;
-                ctx.save(); ctx.translate(player.x, player.y); ctx.rotate(angle+off);
-                ctx.restore();
-            }
-
-            if (playerImage.complete) {
-                ctx.save();
-                ctx.translate(player.x, player.y);
-                ctx.rotate(angle);
-                const size = player.r * 2.8; 
-                ctx.drawImage(playerImage, -size/2, -size/2, size, size);
-                ctx.restore();
-            } else {
-                ctx.beginPath(); ctx.arc(player.x, player.y, player.r, 0, Math.PI*2); ctx.fillStyle=player.color; ctx.fill();
-            }
+            for(let i=0; i<player.turrets; i++) { const off=(i-(player.turrets-1)/2)*spread; ctx.save(); ctx.translate(player.x, player.y); ctx.rotate(angle+off); ctx.restore(); }
+            if (playerImage.complete) { ctx.save(); ctx.translate(player.x, player.y); ctx.rotate(angle); const size = player.r * 2.8; ctx.drawImage(playerImage, -size/2, -size/2, size, size); ctx.restore(); } else { ctx.beginPath(); ctx.arc(player.x, player.y, player.r, 0, Math.PI*2); ctx.fillStyle=player.color; ctx.fill(); }
         }
         
         function spawnEnemy() { 
             if (bossesToSpawn > 0) {
-                let r = 60, c = '#8b5cf6', s = 0.3, type = 'titan';
-                let hp = 300 + (wave * 30); 
-
-                let x, y;
-                if (Math.random() < .5) { x = Math.random() < .5 ? -r : canvas.width + r; y = Math.random() * canvas.height; }
-                else { x = Math.random() * canvas.width; y = Math.random() < .5 ? -r : canvas.height + r; }
-                
-                enemies.push(new Enemy(x, y, r, c, hp, s, type));
-                bossesToSpawn--;
-                return; 
+                let r = 60, c = '#8b5cf6', s = 0.3, type = 'titan', hp = 300 + (wave * 30); 
+                let x, y; if (Math.random() < .5) { x = Math.random() < .5 ? -r : canvas.width + r; y = Math.random() * canvas.height; } else { x = Math.random() * canvas.width; y = Math.random() < .5 ? -r : canvas.height + r; }
+                enemies.push(new Enemy(x, y, r, c, hp, s, type)); bossesToSpawn--; return; 
             }
-
-            let r=22, c='#22c55e', hp=2+wave, s=1, type='normal'; 
-            const rand = Math.random();
-            if(wave >= 8 && rand < 0.2) { r=25; c='#06b6d4'; hp=3+wave; s=1.2; type='zigzag'; }
-            else if(wave >= 5 && rand < 0.35) { r=15; c='#facc15'; hp=1+wave/2; s=1.8; type='runner'; } 
-            else if(Math.random()<(0.05+wave*0.01)) { r=40; c='#dc2626'; hp=8+wave*1.5; s=0.7; type='big'; } 
-            
+            let r=22, c='#22c55e', hp=2+wave, s=1, type='normal'; const rand = Math.random();
+            if(wave >= 8 && rand < 0.2) { r=25; c='#06b6d4'; hp=3+wave; s=1.2; type='zigzag'; } else if(wave >= 5 && rand < 0.35) { r=15; c='#facc15'; hp=1+wave/2; s=1.8; type='runner'; } else if(Math.random()<(0.05+wave*0.01)) { r=40; c='#dc2626'; hp=8+wave*1.5; s=0.7; type='big'; } 
             let x,y; if(Math.random()<.5){x=Math.random()<.5?-r:canvas.width+r; y=Math.random()*canvas.height;}else{x=Math.random()*canvas.width; y=Math.random()<.5?-r:canvas.height+r;} 
             enemies.push(new Enemy(x,y,r,c,hp,s,type)); 
         }
@@ -1141,172 +640,30 @@ if(!gameActive) return; animationId=requestAnimationFrame(animate);
         function startRegen() { clearInterval(regenInterval); regenInterval=setInterval(()=>{if(gameActive&&!isPaused&&player.hp<player.maxHp){const old=player.hp;player.hp=Math.min(player.hp+player.regen,player.maxHp);if(player.hp>old){updateHud();const el=document.createElement('div');el.className='floating-text';el.innerText=`+${player.regen}`;el.style.left=player.x+'px';el.style.top=(player.y-30)+'px';el.style.color='#22c55e';ui.float.appendChild(el);setTimeout(()=>el.remove(),1000);}}}, 3000); }
         function startAutoSave() { clearInterval(autoSaveInterval); autoSaveInterval=setInterval(()=>{if(gameActive&&!isPaused&&score>0) saveScoreData(currentPlayerName,wave,score);},60000); }
 
-        const skills = [
-            {id:'d',n:'Damage',d:'+1 Dmg',i:'⚔️',k:'dmg',v:1},
-            {id:'s',n:'Speed',d:'+10% Spd',i:'⚡',k:'speed',v:0.5},
-            {id:'h',n:'Max HP',d:'+20 HP',i:'❤️',t:'h',v:20},
-            {id:'t',n:'Turret',d:'+1 Gun',i:'🔫',t:'t',v:1},
-            {id:'fr',n:'Frost',d:'Slow Shot',i:'❄️',t:'fr',v:1}, 
-            {id:'c',n:'Critical',d:'+10% Crit',i:'🎯',k:'crit',v:0.1},
-            {id:'r',n:'Regen',d:'+5 Heal',i:'💊',t:'r',v:5}
-        ];
+        const skills = [ {id:'d',n:'Damage',d:'+1 Dmg',i:'⚔️',k:'dmg',v:1}, {id:'s',n:'Speed',d:'+10% Spd',i:'⚡',k:'speed',v:0.5}, {id:'h',n:'Max HP',d:'+20 HP',i:'❤️',t:'h',v:20}, {id:'t',n:'Turret',d:'+1 Gun',i:'🔫',t:'t',v:1}, {id:'fr',n:'Frost',d:'Slow Shot',i:'❄️',t:'fr',v:1}, {id:'c',n:'Critical',d:'+10% Crit',i:'🎯',k:'crit',v:0.1}, {id:'r',n:'Regen',d:'+5 Heal',i:'💊',t:'r',v:5} ];
 
         function gainXp(amt) { if(player.lvl>=30)return; player.xp+=amt; if(player.xp>=player.xpNeed){player.xp-=player.xpNeed; player.lvl++; player.xpNeed=Math.floor(player.xpNeed*1.3); triggerLevelUp();} updateHud(); }
         
         function triggerLevelUp() { 
             isPaused=true; ui.upgrade.classList.remove('hidden'); ui.cards.innerHTML=''; let opts=[]; 
-            while(opts.length<3){
-                const s=skills[Math.floor(Math.random()*skills.length)]; 
-                // Elemental Lock Logic: If Fire equipped, hide Frost.
-                if((s.id==='t'&&player.turrets>=5) || (s.id==='r'&&player.regen>=30) || (s.id==='fr' && (player.frost || player.fire))) continue; 
-                if(!opts.includes(s))opts.push(s);
-            } 
-            opts.forEach(s=>{
-                const el=document.createElement('div');el.className='skill-card';
-                el.innerHTML=`<div class="skill-icon">${s.i}</div><div class="skill-title">${s.n}</div><div class="skill-desc">${s.d}</div>`;
-                el.onclick=()=>{
-                    if(s.k) { player[s.k]+=s.v; if(s.k==='speed') player.baseSpeed+=s.v; } 
-                    else if(s.t==='h'){player.maxHp+=s.v;player.hp+=s.v;}
-                    else if(s.t==='t')player.turrets=Math.min(5,player.turrets+s.v);
-                    else if(s.t==='r')player.regen=Math.min(30,player.regen+s.v);
-                    else if(s.t==='fr')player.frost=true; 
-                    
-                    ui.upgrade.classList.add('hidden'); isPaused=false; updateHud();
-                };
-                ui.cards.appendChild(el);
-            }); 
+            while(opts.length<3){ const s=skills[Math.floor(Math.random()*skills.length)]; if((s.id==='t'&&player.turrets>=5) || (s.id==='r'&&player.regen>=30) || (s.id==='fr' && (player.frost || player.fire))) continue; if(!opts.includes(s))opts.push(s); } 
+            opts.forEach(s=>{ const el=document.createElement('div');el.className='skill-card'; el.innerHTML=`<div class="skill-icon">${s.i}</div><div class="skill-title">${s.n}</div><div class="skill-desc">${s.d}</div>`; el.onclick=()=>{ if(s.k) { player[s.k]+=s.v; if(s.k==='speed') player.baseSpeed+=s.v; } else if(s.t==='h'){player.maxHp+=s.v;player.hp+=s.v;} else if(s.t==='t')player.turrets=Math.min(5,player.turrets+s.v); else if(s.t==='r')player.regen=Math.min(30,player.regen+s.v); else if(s.t==='fr')player.frost=true; ui.upgrade.classList.add('hidden'); isPaused=false; updateHud(); }; ui.cards.appendChild(el); }); 
         }
 
-        function startWaveCountdown(seconds) {
-            let count = seconds;
-            ui.announce.innerText = count;
-            ui.announce.style.opacity = 1;
-            
-            let timer = setInterval(() => {
-                count--;
-                if (count > 0) {
-                    ui.announce.innerText = count;
-                } else {
-                    clearInterval(timer);
-                    ui.announce.innerText = "START!";
-                    setTimeout(() => {
-                        ui.announce.style.opacity = 0;
-                        startNextWave();
-                    }, 1000);
-                }
-            }, 1000);
-        }
+        function startWaveCountdown(seconds) { let count = seconds; ui.announce.innerText = count; ui.announce.style.opacity = 1; let timer = setInterval(() => { count--; if (count > 0) ui.announce.innerText = count; else { clearInterval(timer); ui.announce.innerText = "START!"; setTimeout(() => { ui.announce.style.opacity = 0; startNextWave(); }, 1000); } }, 1000); }
 
-        function startNextWave() { 
-            // 1. ล็อกปุ่มร้านค้าทันทีที่เริ่มเวฟใหม่ (ให้เป็นสีเทา)
-    document.getElementById('shop-btn').classList.add('btn-disabled');
-            // --- รีเซ็ตระบบแจ้งเตือน ---
-    hasWarnedPreBoss = false; // <--- สำคัญ! ต้องรีเซ็ตค่านี้ทุกครั้งที่เริ่มเวฟใหม่
+        function startNextWave() { document.getElementById('shop-btn').classList.add('btn-disabled'); waveActive = true; spawnTimer = 0; ui.wave.innerText = `WAVE ${wave}`; waveTimer = 30 + ((wave - 1) * 5); ui.timer.innerText = formatTime(waveTimer); if (wave % 5 === 0) { bossesToSpawn = Math.floor(wave / 5); ui.announce.innerText = "BOSS WAVE!"; ui.announce.style.opacity = 1; bgMusic.pause(); bossMusic.currentTime = 0; bossMusic.play().catch(()=>{}); setTimeout(() => ui.announce.style.opacity = 0, 2000); } else { bossesToSpawn = 0; bossMusic.pause(); if (bgMusic.paused) bgMusic.play().catch(()=>{}); } }
 
-    waveActive = true;
-    spawnTimer = 0;
-    ui.wave.innerText = `WAVE ${wave}`;
-
-    // --- TIME SETUP ---
-    waveTimer = 30 + ((wave - 1) * 5);
-    ui.timer.innerText = formatTime(waveTimer);
-
-    if (wave % 5 === 0) {
-        bossesToSpawn = Math.floor(wave / 5);
-        ui.announce.innerText = "BOSS WAVE!";
-        ui.announce.style.opacity = 1;
-
-        bgMusic.pause();
-        bossMusic.currentTime = 0;
-        bossMusic.play().catch(()=>{});
-
-        setTimeout(() => ui.announce.style.opacity = 0, 2000);
-    } else {
-        bossesToSpawn = 0;
-        bossMusic.pause();
-        if (bgMusic.paused) bgMusic.play().catch(()=>{});
-    }
-}
-
-        function updateHud() { 
-            ui.score.innerText=score; 
-            ui.gold.innerText=gold;
-            ui.dmg.innerText=player.dmg; 
-            ui.regen.innerText=player.regen; 
-            ui.hpFill.style.width=(player.hp/player.maxHp*100)+'%'; 
-            ui.hpText.innerText=`${Math.ceil(player.hp)}/${player.maxHp}`; 
-            ui.lvl.innerText=player.lvl>=30?'MAX':'Lv.'+player.lvl; 
-            ui.xpFill.style.width=player.lvl>=30?'100%':(player.xp/player.xpNeed*100)+'%'; 
-        }
+        function updateHud() { ui.score.innerText=score; ui.gold.innerText=gold; ui.dmg.innerText=player.dmg; ui.regen.innerText=player.regen; ui.hpFill.style.width=(player.hp/player.maxHp*100)+'%'; ui.hpText.innerText=`${Math.ceil(player.hp)}/${player.maxHp}`; ui.lvl.innerText=player.lvl>=30?'MAX':'Lv.'+player.lvl; ui.xpFill.style.width=player.lvl>=30?'100%':(player.xp/player.xpNeed*100)+'%'; }
         
         function startGame() {
-      if (!currentPlayerName || currentPlayerName === "Survivor") {
-    const inputName = ui.nameInput.value.trim();
-    if(!inputName) { alert("กรุณาใส่ชื่อก่อนเริ่มเกม!"); return; }
-    currentPlayerName = inputName;
-}
-
-            // TEST GOLD
-            gameActive = true; isPaused = false; score = 0; gold=0; wave = 1;
-            resize(); 
-            player.x=canvas.width/2; player.y=canvas.height/2; player.hp=100; player.maxHp=100; player.lvl=1; player.xp=0; player.xpNeed=100; player.dmg=1; player.turrets=1; player.regen=5; player.explosive=false;
-            player.baseSpeed=4; player.speed=4; player.slowStacks=0; player.slowTimer=0;
-            player.frost = false; 
-            player.fire = false;
-            player.crit = 0;
-
-            enemies=[]; projectiles=[]; particles=[]; enemyProjectiles=[];
-            
-            bossMusic.pause(); bossMusic.currentTime = 0;
-            gameOverSound.pause(); gameOverSound.currentTime = 0;
-            bgMusic.currentTime = 0;
-            bgMusic.play().catch(()=>{});
-
-            ui.start.classList.add('hidden'); ui.over.classList.add('hidden');
-            updateHud(); startNextWave(); startRegen(); startAutoSave(); animate();
+            if (!currentPlayerName || currentPlayerName === "Survivor") { const inputName = ui.nameInput.value.trim(); if(!inputName) { alert("กรุณาใส่ชื่อก่อนเริ่มเกม!"); return; } currentPlayerName = inputName; }
+            gameActive = true; isPaused = false; score = 0; gold=0; wave = 1; resize(); player.x=canvas.width/2; player.y=canvas.height/2; player.hp=100; player.maxHp=100; player.lvl=1; player.xp=0; player.xpNeed=100; player.dmg=1; player.turrets=1; player.regen=5; player.baseSpeed=4; player.speed=4; player.slowStacks=0; player.slowTimer=0; player.frost = false; player.fire = false; player.crit = 0; enemies=[]; projectiles=[]; particles=[]; enemyProjectiles=[]; bossMusic.pause(); bossMusic.currentTime = 0; gameOverSound.pause(); gameOverSound.currentTime = 0; bgMusic.currentTime = 0; bgMusic.play().catch(()=>{}); ui.start.classList.add('hidden'); ui.over.classList.add('hidden'); updateHud(); startNextWave(); startRegen(); startAutoSave(); animate();
         }
-        function gameOver() {
-            gameActive = false; 
-            deathCount++; //
-            clearInterval(regenInterval); clearInterval(autoSaveInterval); cancelAnimationFrame(animationId);
-            
-            bgMusic.pause(); 
-            bossMusic.pause();
-            gameOverSound.currentTime = 0;
-            gameOverSound.play().catch(()=>{});
 
-            ui.finalScore.innerText = score; 
-         ui.finalWave.innerText = `Wave: ${wave} | Deaths: ${deathCount}`; 
-        saveScoreData(currentPlayerName, wave, score);
-        ui.over.classList.remove('hidden');
-        }
-        function restartGame() {
-    ui.over.classList.add('hidden'); // ปิดหน้าจอจบเกม
-    startGame(); // เริ่มเกมใหม่ทันทีโดยใช้ชื่อเดิม
-}
-        function goToHome() {
-    // 1. บันทึกคะแนนครั้งสุดท้ายเพื่อความชัวร์
-    saveScoreData(currentPlayerName, wave, score);
-    
-    // 2. ปิดหน้าจอจบเกม และเปิดหน้าแรก
-    ui.over.classList.add('hidden');
-    ui.start.classList.remove('hidden');
-    
-    // 3. ดึงอันดับใหม่ล่าสุดมาแสดงที่หน้าแรก
-    fetchLeaderboard();
-    
-    // 4. หยุดเสียงเพลง (ถ้ามี)
-    bgMusic.pause();
-    bossMusic.pause();
-}
+        function gameOver() { gameActive = false; deathCount++; clearInterval(regenInterval); clearInterval(autoSaveInterval); cancelAnimationFrame(animationId); bgMusic.pause(); bossMusic.pause(); gameOverSound.currentTime = 0; gameOverSound.play().catch(()=>{}); ui.finalScore.innerText = score; ui.finalWave.innerText = `Wave: ${wave} | Deaths: ${deathCount}`; saveScoreData(currentPlayerName, wave, score); ui.over.classList.remove('hidden'); }
+        function restartGame() { ui.over.classList.add('hidden'); startGame(); }
+        function goToHome() { saveScoreData(currentPlayerName, wave, score); ui.over.classList.add('hidden'); ui.start.classList.remove('hidden'); fetchLeaderboard(); bgMusic.pause(); bossMusic.pause(); }
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
