@@ -115,11 +115,15 @@
             border-radius: 10px; padding: 15px; width: 80%; max-width: 500px; border: 1px solid #555;
         }
         .lb-title { color: #fbbf24; font-size: 1.2rem; margin-bottom: 10px; font-weight: bold; }
-        .lb-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; color: #ddd; }
-        .lb-table th { text-align: left; border-bottom: 1px solid #555; padding: 5px; color: #ef4444; }
-        .lb-table td { border-bottom: 1px solid #333; padding: 5px; }
-        .lb-rank { width: 30px; text-align: center; font-weight: bold; color: #fbbf24; }
-        .lb-score { text-align: right; color: #22c55e; }
+        .lb-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; color: #ddd; table-layout: fixed; }
+        .lb-table th, .lb-table td { border-bottom: 1px solid #333; padding: 6px 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .lb-table th { color: #ef4444; text-align: center; border-bottom: 1px solid #555; }
+        .lb-table th:nth-child(1), .lb-table td:nth-child(1) { width: 35px; text-align: center; } /* ลำดับ */
+        .lb-table th:nth-child(2), .lb-table td:nth-child(2) { width: auto; text-align: center; } /* ชื่อ - จัดให้อยู่ตรงกลางตามที่ต้องการ */
+        .lb-table th:nth-child(3), .lb-table td:nth-child(3) { width: 60px; text-align: center; } /* Wave - เพิ่มความกว้างลดความแออัด */
+        .lb-table th:nth-child(4), .lb-table td:nth-child(4) { width: 60px; text-align: center; } /* ตาย - เพิ่มความกว้างลดความแออัด */
+        .lb-table th:nth-child(5), .lb-table td:nth-child(5) { width: 90px; text-align: right; color: #22c55e; font-weight: bold; } /* คะแนน */
+        .lb-table .lb-score { text-align: right; color: #22c55e; font-weight: bold; padding-right: 5px; }
 
         .upgrade-container { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; justify-content: center; }
         
@@ -240,11 +244,19 @@
         <div class="leaderboard-container">
             <div class="lb-title">🏆 อันดับวันนี้ (Reset Daily)</div>
             <table class="lb-table">
-             <thead>
-    <tr><th>#</th><th>ชื่อ</th><th>Wave</th><th>ตาย</th><th style="text-align:right;">คะแนน</th></tr>
-</thead>
-<tbody id="lb-body-over"></tbody>
-            </table>
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>ชื่อ</th>
+            <th style="text-align:center;">Wave</th>
+            <th style="text-align:center;">ตาย</th>
+            <th style="text-align:right;">คะแนน</th>
+        </tr>
+    </thead>
+    <tbody id="lb-body-start">
+        <tr><td colspan="5" style="text-align:center;">กำลังโหลด...</td></tr>
+    </tbody>
+</table>
         </div>
     </div>
 
@@ -306,7 +318,7 @@
         <div class="leaderboard-container" style="margin: 20px 0; max-height: 200px; overflow-y:auto;">
             <table class="lb-table">
                 <thead>
-                    <tr><th>#</th><th>ชื่อ</th><th>Wave</th><th style="text-align:right;">คะแนน</th></tr>
+    <tr><th>#</th><th>ชื่อ</th><th>Wave</th><th>ตาย</th><th style="text-align:right;">คะแนน</th></tr>
                 </thead>
                 <tbody id="lb-body-over"></tbody>
             </table>
@@ -373,19 +385,21 @@
         function updateLeaderboardUI(d) {
            // 1. ดักจับกรณีไม่มีข้อมูล หรือโหลดไม่สำเร็จ เพื่อไม่ให้หน้าจอค้าง "กำลังโหลด"
     if (!d || d.length === 0) {
-        const noData = `<tr><td colspan="4" style="text-align:center;color:#888;">ไม่สามารถโหลดอันดับได้ (Offline)</td></tr>`;
+        const noData = `<tr><td colspan="5" style="text-align:center;color:#888;">ไม่สามารถโหลดอันดับได้ (Offline)</td></tr>`;
         document.getElementById('lb-body-start').innerHTML = noData;
         document.getElementById('lb-body-over').innerHTML = noData;
         return; // หยุดการทำงานตรงนี้เลย
     }
 
     // 2. ถ้ามีข้อมูล ให้วาดตารางตามปกติ
-    const h = d.map((p,i)=>`<tr>
-        <td class="lb-rank">${i+1}</td>
-        <td>${p.name}</td>
-        <td style="text-align:center;">${p.wave}</td>
-        <td style="text-align:center; color:#ef4444;">${p.deaths || 0}</td> <td class="lb-score">${p.score}</td>
-    </tr>`).join('');
+  const h = d.map((p, i) => `
+        <tr style="color: white;"> <td style="text-align:center; width:35px;">${i + 1}</td>
+            <td style="text-align:center;">${p.name}</td>
+            <td style="text-align:center; width:60px;">${p.wave}</td>
+            <td style="text-align:center; width:60px;">${p.deaths || 0}</td>
+            <td style="text-align:right; width:85px; color:#22c55e; font-weight:bold; padding-right:5px;">
+                ${Number(p.score).toLocaleString()} </td>
+        </tr>`).join('');
     document.getElementById('lb-body-start').innerHTML = h;
     document.getElementById('lb-body-over').innerHTML = h;
         }
@@ -1247,6 +1261,7 @@ if(!gameActive) return; animationId=requestAnimationFrame(animate);
     </script>
 </body>
 </html>
+
 
 
 
