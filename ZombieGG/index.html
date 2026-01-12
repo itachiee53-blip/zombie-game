@@ -511,6 +511,7 @@
         window.addEventListener('mouseup', ()=>mouse.down=false);
 
         function handleTouch(e) {
+            if(e.cancelable) e.preventDefault(); //
             if(ui.rotateMsg.offsetWidth>0 && ui.rotateMsg.style.display!=='none') return;
             if(e.target.id === 'settings-btn' || e.target.id === 'shop-btn') return;
             
@@ -530,11 +531,31 @@
             }
             if(!mF) resetJoy(touchMove, ui.joyMove); if(!aF) resetJoy(touchAim, ui.joyAim);
         }
-        function updateJoy(t,s,el,m){
-            const dx=t.clientX-s.startX, dy=t.clientY-s.startY, d=Math.hypot(dx,dy), max=35, a=Math.atan2(dy,dx), l=Math.min(d,max);
-            el.querySelector('.joystick-stick').style.transform=`translate(calc(-50% + ${Math.cos(a)*l}px), calc(-50% + ${Math.sin(a)*l}px))`;
-            if(m){s.vec.x=Math.cos(a)*(d>5?1:0); s.vec.y=Math.sin(a)*(d>5?1:0);} else{s.angle=a;}
-        }
+        function updateJoy(t, s, el, m) {
+    // 1. หาจุดกึ่งกลางของวงกลมจอยสติ๊กที่อยู่บนหน้าจอ
+    const rect = el.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    
+    // 2. คำนวณระยะห่างระหว่าง "นิ้ว" กับ "กึ่งกลางจอย"
+    const dx = t.clientX - centerX;
+    const dy = t.clientY - centerY;
+    const d = Math.hypot(dx, dy);
+    const max = rect.width / 2; 
+    const a = Math.atan2(dy, dx);
+    const l = Math.min(d, max);
+    
+    // 3. สั่งให้หัวจอยขยับตามนิ้ว
+    el.querySelector('.joystick-stick').style.transform = `translate(calc(-50% + ${Math.cos(a) * l}px), calc(-50% + ${Math.sin(a) * l}px))`;
+    
+    // 4. ส่งค่าไปควบคุมตัวละคร
+    if (m) {
+        s.vec.x = Math.cos(a) * (d > 5 ? 1 : 0);
+        s.vec.y = Math.sin(a) * (d > 5 ? 1 : 0);
+    } else {
+        s.angle = a;
+    }
+}
         function resetJoy(s,el){ s.id=null; s.vec={x:0,y:0}; s.active=false; el.style.display='none'; }
         window.addEventListener('touchstart', handleTouch, {passive:false}); window.addEventListener('touchmove', handleTouch, {passive:false}); window.addEventListener('touchend', handleTouch);
 
@@ -1207,6 +1228,7 @@ if(!gameActive) return; animationId=requestAnimationFrame(animate);
     </script>
 </body>
 </html>
+
 
 
 
