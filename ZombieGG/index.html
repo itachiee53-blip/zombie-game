@@ -422,7 +422,7 @@
         const springSpriteRoll = new Image(); springSpriteRoll.src = 'enemy_spring_roll.png';
         const springSpriteLunge = new Image(); springSpriteLunge.src = 'enemy_spring_lunge.png';
 
-        // ✅ 🎵 กลับมาใช้เพลงเดียว (music.mp3)
+        // ✅ กลับมาใช้เพลงเดียว (music.mp3) วนลูป
         let bgmVolume = 0.1; let sfxVolume = 1.0; 
         
         const bgMusic = new Audio('music.mp3'); 
@@ -487,8 +487,8 @@
         const isMobile=/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
         function resize() { 
-            // ✅ Optimize: จำกัด Device Pixel Ratio ไม่เกิน 1.5 เพื่อความลื่นบนจอมือถือความละเอียดสูง
-            const ratio = isMobile ? Math.min(window.devicePixelRatio, 1.5) : 1;
+            // ✅ Optimize: จำกัด Ratio ไม่ให้เกิน 2 (เพื่อคุณภาพที่ดีบนมือถือ) แต่ไม่สูงเกินไปจนเครื่องร้อน
+            const ratio = isMobile ? Math.min(window.devicePixelRatio, 2) : 1;
             
             if (window.visualViewport) { 
                 canvas.width = window.visualViewport.width * ratio; 
@@ -505,8 +505,8 @@
 
             if(!gameActive){player.x = (canvas.width/ratio)/2; player.y = (canvas.height/ratio)/2;} 
             
-            // ✅ Optimize: เปิด Image Smoothing เพื่อให้ภาพสมูทไม่กระตุก (Fix Choppiness)
-            ctx.imageSmoothingEnabled = true;
+            // ✅ Fix: ปิด Image Smoothing เพื่อให้ภาพ Pixel Art คมชัด (แก้ปัญหามอนแตก/เบลอ)
+            ctx.imageSmoothingEnabled = false;
         }
         window.addEventListener('resize', resize);
         if (window.visualViewport) { window.visualViewport.addEventListener('resize', resize); }
@@ -656,6 +656,7 @@
 
         function handleDeathOrRevive() {
             if (player.hasRevive) {
+                // หยุดเกมชั่วคราวและแสดงหน้า Revive UI
                 gameActive = false; 
                 cancelAnimationFrame(animationId);
                 ui.reviveScreen.classList.remove('hidden');
@@ -664,18 +665,25 @@
             }
         }
 
+        // ✅ ฟังก์ชันยืนยันการใช้ไอเทม (กดจากหน้า UI)
         function confirmRevive() {
             playClickSound();
             ui.reviveScreen.classList.add('hidden');
             gameActive = true;
+            
+            // รีเซ็ตสถานะและเลือด
             player.hp = player.maxHp;
             player.hasRevive = false;
+            
             createExplosion(player.x, player.y, '#ffffff');
             createFloatingText("😇 REVIVED!", player.x, player.y - 50, '#ffffff');
+            
+            // ผลักศัตรูออกไป
             enemies.forEach(e => { let a = Math.atan2(e.y - player.y, e.x - player.x); e.x += Math.cos(a) * 200; e.y += Math.sin(a) * 200; });
             springEnemies.forEach(s => { let a = Math.atan2(s.y - player.y, s.x - player.x); s.x += Math.cos(a) * 200; s.y += Math.sin(a) * 200; });
+            
             updateHud();
-            animate(); 
+            animate(); // กลับมาเล่นต่อ
         }
 
         function animate() {
@@ -683,7 +691,7 @@
             animationId = requestAnimationFrame(animate);
             
             // ✅ ใช้ขนาด Canvas ตาม Ratio ที่คำนวณไว้
-            const ratio = isMobile ? Math.min(window.devicePixelRatio, 1.5) : 1;
+            const ratio = isMobile ? Math.min(window.devicePixelRatio, 2) : 1;
             ctx.clearRect(0, 0, canvas.width/ratio, canvas.height/ratio);
 
             if(isPaused) return; 
@@ -713,7 +721,7 @@
                     } else if (wave % 5 === 0) { 
                         ui.announce.innerText = "BOSS DEFEATED!"; ui.announce.style.opacity = 1; wave++; startWaveCountdown(3);
                         
-                        // ✅ สลับกลับมาเพลงปกติเมื่อจบบอส
+                        // ✅ สลับมาเพลงบอส
                         bossMusic.pause(); bossMusic.currentTime = 0;
                         if(bgMusic.paused) bgMusic.play().catch(()=>{});
 
@@ -728,7 +736,7 @@
             if(mx!==0||my!==0){ if(touchMove.id===null){const l=Math.hypot(mx,my);mx/=l;my/=l;} player.x+=mx*player.speed; player.y+=my*player.speed; const bottomPadding = isMobile ? 40 : 0; 
             
             // ✅ แก้ไขขอบเขตการเดินให้ถูกต้องตาม Scale
-            const ratio = isMobile ? Math.min(window.devicePixelRatio, 1.5) : 1;
+            const ratio = isMobile ? Math.min(window.devicePixelRatio, 2) : 1;
             const boundsW = canvas.width / ratio;
             const boundsH = canvas.height / ratio;
             player.x=Math.max(player.r,Math.min(boundsW-player.r,player.x)); player.y=Math.max(player.r,Math.min(boundsH-player.r-bottomPadding,player.y)); }
@@ -740,14 +748,14 @@
             for(let i = particles.length - 1; i >= 0; i--) { const p = particles[i]; if(p.a <= 0) particles.splice(i, 1); else p.update(); }
             for(let i = projectiles.length - 1; i >= 0; i--) { const p = projectiles[i]; p.update(); 
                 // ✅ แก้ไขขอบเขตกระสุน
-                const ratio = isMobile ? Math.min(window.devicePixelRatio, 1.5) : 1;
+                const ratio = isMobile ? Math.min(window.devicePixelRatio, 2) : 1;
                 if(p.x<0||p.x>canvas.width/ratio||p.y<0||p.y>canvas.height/ratio||p.hits<=0) projectiles.splice(i, 1); 
             }
             
             for(let i = enemyProjectiles.length - 1; i >= 0; i--) {
                 const p = enemyProjectiles[i]; p.update();
                 // ✅ แก้ไขขอบเขตกระสุนศัตรู
-                const ratio = isMobile ? Math.min(window.devicePixelRatio, 1.5) : 1;
+                const ratio = isMobile ? Math.min(window.devicePixelRatio, 2) : 1;
                 if(p.x<0||p.x>canvas.width/ratio||p.y<0||p.y>canvas.height/ratio) { enemyProjectiles.splice(i,1);
                 } else if(Math.hypot(p.x-player.x, p.y-player.y) < p.r + player.r) { 
                     if (player.shield > 0) {
@@ -822,7 +830,7 @@
                 if (img && img.complete && img.naturalHeight !== 0) ctx.drawImage(img, -size/2, -size/2, size, size); else { ctx.beginPath(); ctx.arc(0, 0, this.r, 0, Math.PI*2); ctx.fillStyle = this.c; ctx.fill(); }
                 ctx.restore();
                 
-                // ✅ หลอดเลือดแบบบาง (Thin Style)
+                // ✅ แก้ไข: กลับมาใช้หลอดเลือดแบบบาง (Thin Style)
                 if(this.hp < this.maxHp){
                     ctx.fillStyle='red';
                     ctx.fillRect(this.x-10, this.y-this.r-8, 20, 3); // พื้นหลังแดง
@@ -881,7 +889,7 @@
             }
             ctx.restore();
 
-            // ✅ หลอดเลือดแบบบางสำหรับ Spring Enemy
+            // ✅ แก้ไข: หลอดเลือดแบบบางสำหรับ Spring Enemy
             if (this.hp < this.maxHp) {
                 ctx.fillStyle = 'red';
                 ctx.fillRect(this.x - 10, this.y - this.height/2 - 10, 20, 3);
@@ -1001,15 +1009,18 @@
                 bossesToSpawn = Math.floor(wave / 5); 
                 ui.announce.innerText = "BOSS WAVE!"; 
                 ui.announce.style.opacity = 1; 
+                
+                // ✅ สลับเพลงบอส (ใช้แค่ 2 ไฟล์)
                 bgMusic.pause(); 
                 bossMusic.currentTime = 0; 
                 bossMusic.play().catch(()=>{}); 
+                
                 setTimeout(() => ui.announce.style.opacity = 0, 2000); 
             } else { 
                 bossesToSpawn = 0; 
-                bossMusic.pause(); 
                 
-                // ✅ เล่นเพลงเดียววนลูป
+                // ✅ สลับกลับมาเพลงปกติ
+                bossMusic.pause(); 
                 if (bgMusic.paused) {
                     bgMusic.play().catch(()=>{});
                 }
@@ -1039,8 +1050,8 @@
             
             // ✅ ปรับ Scale ตาม Device (แก้แลค)
             resize(); 
-            player.x=canvas.width/(isMobile?Math.min(window.devicePixelRatio,1.5):1)/2; 
-            player.y=canvas.height/(isMobile?Math.min(window.devicePixelRatio,1.5):1)/2;
+            player.x=canvas.width/(isMobile?Math.min(window.devicePixelRatio,2):1)/2; 
+            player.y=canvas.height/(isMobile?Math.min(window.devicePixelRatio,2):1)/2;
 
             player.hp=100; player.maxHp=100; player.lvl=1; player.xp=0; player.xpNeed=100; player.dmg=1; player.turrets=1; player.regen=5; player.baseSpeed=4; player.speed=4; player.slowStacks=0; player.slowTimer=0; player.frost = false; player.fire = false; player.crit = 0; player.shield=0; player.maxShield=100;
             player.hasRevive = false; player.reviveCount = 0; player.revivePrice = 200;
