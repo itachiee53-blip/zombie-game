@@ -400,27 +400,43 @@
         const canvas = document.getElementById('gameCanvas'); const ctx = canvas.getContext('2d');
         const ui={start:document.getElementById('startScreen'),over:document.getElementById('gameOverScreen'),upgrade:document.getElementById('upgradeScreen'),settings:document.getElementById('settingsScreen'),shop:document.getElementById('shopScreen'),shopGold:document.getElementById('shopGoldVal'),shopFire:document.getElementById('shop-fire'),cards:document.getElementById('cardContainer'),score:document.getElementById('scoreVal'),gold:document.getElementById('goldVal'),wave:document.getElementById('waveText'),timer:document.getElementById('timerText'),dmg:document.getElementById('dmgVal'),regen:document.getElementById('regenVal'),hpFill:document.getElementById('healthFill'),hpText:document.getElementById('hpText'),xpFill:document.getElementById('xpFill'),lvl:document.getElementById('levelDisplay'),announce:document.getElementById('waveAnnouncement'),float:document.getElementById('floatingTextContainer'),finalScore:document.getElementById('finalScore'),finalWave:document.getElementById('finalWave'),joyMove:document.getElementById('joy-move'),joyAim:document.getElementById('joy-aim'),rotateMsg:document.getElementById('rotate-message'),nameInput:document.getElementById('name-input')};
 
-        // ✅ โหลดภาพไว้ก่อน (Preload) เพื่อแก้ปัญหาโหลดช้า
-        // ถ้าไฟล์คุณเป็น .jpg ให้แก้ข้างหลังนี้เป็น .jpg ครับ
+        // ✅ Preload ระบบโหลดภาพล่วงหน้า (แก้กระตุกบนมือถือ)
         const playerImage = new Image(); playerImage.src = 'player.png'; 
         const enemyImages = { normal: new Image(), big: new Image(), runner: new Image(), zigzag: new Image(), titan: new Image() };
         enemyImages.normal.src = 'zombie_normal.png'; enemyImages.big.src = 'zombie_big.png'; enemyImages.runner.src = 'zombie_runner.png'; enemyImages.zigzag.src = 'zombie_zigzag.png'; enemyImages.titan.src = 'zombie_titan.png';
 
-        // ✅ Preload ภาพ Spring Enemy (โหลดครั้งเดียวใช้ตลอดเกม)
+        // ✅ Preload ภาพ Spring Enemy
         const springSpriteRoll = new Image(); springSpriteRoll.src = 'enemy_spring_roll.png';
         const springSpriteLunge = new Image(); springSpriteLunge.src = 'enemy_spring_lunge.png';
 
+        // ✅ 🎵 รายชื่อเพลงที่ต้องสุ่ม
+        const bgmFiles = ['music.mp3', 'music2.mp3', 'music3.mp3', 'music4.mp3', 'music5.mp3']; 
+        let currentBgmIndex = 0; // ตัวแปรเก็บลำดับเพลงปัจจุบัน
+
         let bgmVolume = 1.0; let sfxVolume = 1.0; 
-        const bgMusic = new Audio('music.mp3'); bgMusic.loop = true; bgMusic.volume = 0.3; 
+        
+        // สร้าง Object เพลง (ใช้ซ้ำ ไม่ new ใหม่)
+        const bgMusic = new Audio(); 
+        bgMusic.loop = false; // ❌ ปิด loop เพื่อให้จบแล้วเล่นเพลงถัดไป
+        bgMusic.volume = 0.3; 
+
+        // ✅ ฟังก์ชันเล่นเพลงถัดไปอัตโนมัติ (Playlist Logic)
+        bgMusic.addEventListener('ended', () => {
+            currentBgmIndex++;
+            if (currentBgmIndex >= bgmFiles.length) currentBgmIndex = 0; // วนกลับไปเพลงแรก
+            bgMusic.src = bgmFiles[currentBgmIndex];
+            bgMusic.play().catch(()=>{});
+        });
+
         const bossMusic = new Audio('boss_music.mp3'); bossMusic.loop = true; bossMusic.volume = 0.3;
         const gameOverSound = new Audio('gameover.mp3'); gameOverSound.volume = 0.2;
         const clickSound = new Audio('click.mp3'); clickSound.volume = 1;
         
         document.addEventListener('touchstart', function() {
-            if (bgMusic.paused) {
-                bgMusic.play().then(() => { bgMusic.pause(); bgMusic.currentTime = 0; }).catch(() => {});
-                clickSound.play().then(() => { clickSound.pause(); clickSound.currentTime = 0; }).catch(() => {});
+            if (bgMusic.paused && bossMusic.paused) {
+                // กระตุ้นเสียง (Unlock Audio Context)
                 if (audioPool.length > 0) { audioPool[0].play().then(() => { audioPool[0].pause(); audioPool[0].currentTime = 0; }).catch(() => {}); }
+                clickSound.play().then(() => { clickSound.pause(); clickSound.currentTime = 0; }).catch(() => {});
             }
         }, { once: true });
 
@@ -562,6 +578,10 @@
             if (id === 'fire_shot' && (player.frost || player.fire)) return;
             if (id === 'reset' && !player.fire && !player.frost) { createFloatingText("ไม่มีสกิลให้รีเซ็ต!", canvas.width/2, canvas.height/2, '#9ca3af'); return; }
             
+            // ✅ ป้องกันไม่ให้ซื้อตอนเกราะ/เลือด เต็ม
+            if (id === 'heal' && player.hp >= player.maxHp) { createFloatingText("HP เต็มอยู่แล้ว!", canvas.width/2, canvas.height/2, '#22c55e'); return; }
+            if (id === 'shield' && player.shield >= player.maxShield) { createFloatingText("เกราะเต็มแล้ว!", canvas.width/2, canvas.height/2, '#3b82f6'); return; }
+
             if (gold >= cost) { 
                 playClickSound();
                 gold -= cost; ui.shopGold.innerText = gold; updateHud();
@@ -591,6 +611,13 @@
             for (let i = springEnemies.length - 1; i >= 0; i--) {
                 const s = springEnemies[i];
                 s.update(player); 
+                
+                // 🛑 เช็คบั๊กเลือด: ถ้าเลือดหมด ต้องตาย! (เพิ่มตรงนี้)
+                if (player.hp <= 0) {
+                    gameOver();
+                    return; // หยุดทำงานทันที
+                }
+
                 s.draw(ctx);      
 
                 if (s.markedForDeletion) {
@@ -622,7 +649,23 @@
                 if (waveTimer > 0) { spawnTimer++; const spawnRate = Math.max(20, 60 - wave * 2); if(spawnTimer > spawnRate) { spawnEnemy(); spawnTimer=0; }
                 } else if (enemies.length === 0) { waveActive = false;
                     if ((wave + 1) % 5 === 0) { document.getElementById('shop-btn').classList.remove('btn-disabled'); ui.announce.innerText = "SAFE ZONE UNLOCKED!"; ui.announce.style.opacity = 1; setTimeout(() => { ui.announce.style.opacity = 0; openShop(); }, 2000);
-                    } else if (wave % 5 === 0) { ui.announce.innerText = "BOSS DEFEATED!"; ui.announce.style.opacity = 1; wave++; startWaveCountdown(3);
+                    } else if (wave % 5 === 0) { 
+                        // --- 💀 จบบอส: หยุดเพลงบอส แล้วเล่นเพลงถัดไป (Next Track) ---
+                        ui.announce.innerText = "BOSS DEFEATED!"; 
+                        ui.announce.style.opacity = 1; 
+                        wave++; 
+                        startWaveCountdown(3);
+
+                        // 🛑 หยุดเพลงบอส
+                        bossMusic.pause();
+                        bossMusic.currentTime = 0;
+
+                        // ▶️ เล่นเพลงถัดไปใน Playlist (วนกลับ 1 ถ้าหมด)
+                        currentBgmIndex++;
+                        if (currentBgmIndex >= bgmFiles.length) currentBgmIndex = 0;
+                        bgMusic.src = bgmFiles[currentBgmIndex];
+                        bgMusic.play().catch(()=>{});
+
                     } else { wave++; ui.announce.innerText = "WAVE CLEAR!"; ui.announce.style.opacity = 1; startWaveCountdown(3); }
                 }
             }
@@ -720,7 +763,22 @@
                 const size = this.r * 2.5, img = enemyImages[this.type];
                 if (img && img.complete && img.naturalHeight !== 0) ctx.drawImage(img, -size/2, -size/2, size, size); else { ctx.beginPath(); ctx.arc(0, 0, this.r, 0, Math.PI*2); ctx.fillStyle = this.c; ctx.fill(); }
                 ctx.restore();
-                if(this.hp<this.maxHp){ ctx.fillStyle='red';ctx.fillRect(this.x-10,this.y-this.r-8,20,3); ctx.fillStyle='#22c55e';ctx.fillRect(this.x-10,this.y-this.r-8,20*(this.hp/this.maxHp),3); }
+                
+                // ✅ แก้ไข: วาดหลอดเลือดให้ซอมบี้ทุกตัว (ปรับตำแหน่งให้สูงขึ้น)
+                if(this.hp < this.maxHp){
+                    const barWidth = 30;
+                    const barHeight = 4;
+                    const yOffset = this.r + 10; // ระยะห่างจากหัว
+                    
+                    // พื้นหลังแดง
+                    ctx.fillStyle = 'red';
+                    ctx.fillRect(this.x - barWidth/2, this.y - yOffset, barWidth, barHeight);
+                    
+                    // เลือดสีเขียว
+                    ctx.fillStyle = '#22c55e';
+                    ctx.fillRect(this.x - barWidth/2, this.y - yOffset, barWidth * (this.hp / this.maxHp), barHeight);
+                }
+
                 if(this.type === 'titan' && wave >= 15) { ctx.beginPath(); ctx.arc(this.x, this.y, this.r+2, 0, Math.PI*2); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke(); }
             } 
         }
@@ -736,6 +794,7 @@
             
             this.state = 'ROLLING';
             this.lungeRange = 250;
+            // ✅ ลดเลือดให้บางลง (25 + wave*2)
             this.maxHp = 25 + (wave * 2); 
             this.hp = this.maxHp;
             this.damage = 1;
@@ -924,7 +983,12 @@
             } else { 
                 bossesToSpawn = 0; 
                 bossMusic.pause(); 
-                if (bgMusic.paused) bgMusic.play().catch(()=>{}); 
+                
+                // ✅ ระบบสุ่มเพลง (เล่นเมื่อเพลงหยุด หรือเริ่มเวฟใหม่)
+                if (bgMusic.paused) {
+                    // 🛑 ลบการสุ่มตรงนี้ออก (เพื่อให้เล่นเพลงต่อจากเดิม หรือเล่นเพลงใหม่ตาม Event Listener)
+                    bgMusic.play().catch(()=>{});
+                }
             } 
         }
 
@@ -945,14 +1009,24 @@
             playClickSound();
             gameActive = true; isPaused = false; score = 0; gold=0; 
             
-            // ✅ ตั้งค่าเริ่มที่ Wave 7 เพื่อทดสอบ
+            // ✅ ตั้งค่าเริ่มที่ Wave 1 (ปกติ)
             wave = 1; 
             
             resize(); player.x=canvas.width/2; player.y=canvas.height/2; player.hp=100; player.maxHp=100; player.lvl=1; player.xp=0; player.xpNeed=100; player.dmg=1; player.turrets=1; player.regen=5; player.baseSpeed=4; player.speed=4; player.slowStacks=0; player.slowTimer=0; player.frost = false; player.fire = false; player.crit = 0; player.shield=0; player.maxShield=100;
             
             enemies=[]; projectiles=[]; particles=[]; enemyProjectiles=[]; springEnemies=[]; 
             
-            bossMusic.pause(); bossMusic.currentTime = 0; gameOverSound.pause(); gameOverSound.currentTime = 0; bgMusic.currentTime = 0; bgMusic.play().catch(()=>{}); ui.start.classList.add('hidden'); ui.over.classList.add('hidden'); updateHud(); startNextWave(); startRegen(); startAutoSave(); animate();
+            bossMusic.pause(); bossMusic.currentTime = 0; gameOverSound.pause(); gameOverSound.currentTime = 0; 
+            
+            // 🛑 บังคับสุ่มเพลงใหม่ทันทีที่เริ่มเกม! (ครั้งเดียว)
+            bgMusic.pause(); 
+            bgMusic.loop = false; // สำคัญมาก: ต้องปิด Loop เพื่อให้ Event 'ended' ทำงาน
+            currentBgmIndex = Math.floor(Math.random() * bgmFiles.length); // สุ่ม Index เริ่มต้น
+            bgMusic.src = bgmFiles[currentBgmIndex]; // ตั้งค่า Source เพลง
+            bgMusic.currentTime = 0;
+            // (เดี๋ยว startNextWave จะสั่ง play เองในบรรทัดต่อๆ ไป)
+
+            ui.start.classList.add('hidden'); ui.over.classList.add('hidden'); updateHud(); startNextWave(); startRegen(); startAutoSave(); animate();
         }
 
         function gameOver() { 
