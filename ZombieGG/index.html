@@ -779,7 +779,7 @@
 
         class Projectile { 
             constructor(x,y,a){ this.x=x;this.y=y;this.vx=Math.cos(a)*12;this.vy=Math.sin(a)*12;this.r=player.pSize; this.hits=1; this.hitList=[]; this.frost = player.frost; this.fire = player.fire; } 
-            update(){ this.x+=this.vx;this.y+=this.vy; ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2); if (this.fire) ctx.fillStyle = '#ef4444'; else if (this.frost) ctx.fillStyle = '#22d3ee'; else ctx.fillStyle = '#fbbf24'; ctx.fill(); } 
+            update(){ this.x+=this.vx;this.y+=this.vy; ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2); if (this.fire) ctx.fillStyle = '#ef444'; else if (this.frost) ctx.fillStyle = '#22d3ee'; else ctx.fillStyle = '#fbbf24'; ctx.fill(); } 
         }
         
         class Enemy { 
