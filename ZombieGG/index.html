@@ -713,8 +713,6 @@
                 if(this.type === 'titan' && wave >= 15) { ctx.beginPath(); ctx.arc(this.x, this.y, this.r+2, 0, Math.PI*2); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke(); }
             } 
         }
-
-        class Particle { constructor(x,y,c){this.x=x;this.y=y;this.c=c;this.vx=(Math.random()-.5)*5;this.vy=(Math.random()-.5)*5;this.a=1;} update(){this.x+=this.vx;this.y+=this.vy;this.a-=0.05;ctx.save();ctx.globalAlpha=this.a;ctx.beginPath();ctx.arc(this.x,this.y,Math.random()*3,0,Math.PI*2);ctx.fillStyle=this.c;ctx.fill();ctx.restore();} }
         
         function drawStatic(aimAngle) { 
             let angle = aimAngle || 0;
@@ -725,7 +723,7 @@
             if (playerImage.complete) { ctx.save(); ctx.translate(player.x, player.y); ctx.rotate(angle); const size = player.r * 2.8; ctx.drawImage(playerImage, -size/2, -size/2, size, size); ctx.restore(); } else { ctx.beginPath(); ctx.arc(player.x, player.y, player.r, 0, Math.PI*2); ctx.fillStyle=player.color; ctx.fill(); }
         }
         
-        function spawnEnemy() { 
+        function spawnEnemy() {    
             if (bossesToSpawn > 0) {
                 let r = 60, c = '#8b5cf6', s = 0.3, type = 'titan', hp = 300 + (wave * 30); 
                 let x, y; if (Math.random() < .5) { x = Math.random() < .5 ? -r : canvas.width + r; y = Math.random() * canvas.height; } else { x = Math.random() * canvas.width; y = Math.random() < .5 ? -r : canvas.height + r; }
@@ -737,7 +735,30 @@
             enemies.push(new Enemy(x,y,r,c,hp,s,type)); 
         }
 
-        function createExplosion(x,y,c) { const count=isMobile?3:6; for(let i=0;i<count;i++) particles.push(new Particle(x,y,c)); }
+        function createExplosion(x,y,c) { 
+            const count = isMobile ? 2 : 5; // มือถือเอาแค่ 2 เม็ดพอ
+            for(let i=0;i<count;i++) particles.push(new Particle(x,y,c)); 
+        }
+
+        class Particle { 
+            constructor(x,y,c){
+                this.x=x; this.y=y; this.c=c;
+                this.vx=(Math.random()-.5)*3; 
+                this.vy=(Math.random()-.5)*3; 
+                this.a=1;
+            } 
+            update(){
+                this.x+=this.vx; this.y+=this.vy;
+                this.a -= isMobile ? 0.1 : 0.05; // หายไวขึ้นในมือถือ
+                ctx.save();
+                ctx.globalAlpha=this.a;
+                ctx.beginPath();
+                // วาดสี่เหลี่ยมแทนวงกลม (เร็วกว่า)
+                ctx.fillStyle=this.c;
+                ctx.fillRect(this.x, this.y, Math.random()*3, Math.random()*3); 
+                ctx.restore();
+            } 
+        }
         function startRegen() { clearInterval(regenInterval); regenInterval=setInterval(()=>{if(gameActive&&!isPaused&&player.hp<player.maxHp){const old=player.hp;player.hp=Math.min(player.hp+player.regen,player.maxHp);if(player.hp>old){updateHud();const el=document.createElement('div');el.className='floating-text';el.innerText=`+${player.regen}`;el.style.left=player.x+'px';el.style.top=(player.y-30)+'px';el.style.color='#22c55e';ui.float.appendChild(el);setTimeout(()=>el.remove(),1000);}}}, 3000); }
         function startAutoSave() { clearInterval(autoSaveInterval); autoSaveInterval=setInterval(()=>{if(gameActive&&!isPaused&&score>0) saveScoreData(currentPlayerName,wave,score);},60000); }
 
@@ -809,5 +830,6 @@
     </script>
 </body>
 </html>
+
 
 
