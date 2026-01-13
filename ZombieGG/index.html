@@ -400,9 +400,15 @@
         const canvas = document.getElementById('gameCanvas'); const ctx = canvas.getContext('2d');
         const ui={start:document.getElementById('startScreen'),over:document.getElementById('gameOverScreen'),upgrade:document.getElementById('upgradeScreen'),settings:document.getElementById('settingsScreen'),shop:document.getElementById('shopScreen'),shopGold:document.getElementById('shopGoldVal'),shopFire:document.getElementById('shop-fire'),cards:document.getElementById('cardContainer'),score:document.getElementById('scoreVal'),gold:document.getElementById('goldVal'),wave:document.getElementById('waveText'),timer:document.getElementById('timerText'),dmg:document.getElementById('dmgVal'),regen:document.getElementById('regenVal'),hpFill:document.getElementById('healthFill'),hpText:document.getElementById('hpText'),xpFill:document.getElementById('xpFill'),lvl:document.getElementById('levelDisplay'),announce:document.getElementById('waveAnnouncement'),float:document.getElementById('floatingTextContainer'),finalScore:document.getElementById('finalScore'),finalWave:document.getElementById('finalWave'),joyMove:document.getElementById('joy-move'),joyAim:document.getElementById('joy-aim'),rotateMsg:document.getElementById('rotate-message'),nameInput:document.getElementById('name-input')};
 
+        // ✅ โหลดภาพไว้ก่อน (Preload) เพื่อแก้ปัญหาโหลดช้า
+        // ถ้าไฟล์คุณเป็น .jpg ให้แก้ข้างหลังนี้เป็น .jpg ครับ
         const playerImage = new Image(); playerImage.src = 'player.png'; 
         const enemyImages = { normal: new Image(), big: new Image(), runner: new Image(), zigzag: new Image(), titan: new Image() };
         enemyImages.normal.src = 'zombie_normal.png'; enemyImages.big.src = 'zombie_big.png'; enemyImages.runner.src = 'zombie_runner.png'; enemyImages.zigzag.src = 'zombie_zigzag.png'; enemyImages.titan.src = 'zombie_titan.png';
+
+        // ✅ Preload ภาพ Spring Enemy (โหลดครั้งเดียวใช้ตลอดเกม)
+        const springSpriteRoll = new Image(); springSpriteRoll.src = 'enemy_spring_roll.png';
+        const springSpriteLunge = new Image(); springSpriteLunge.src = 'enemy_spring_lunge.png';
 
         let bgmVolume = 1.0; let sfxVolume = 1.0; 
         const bgMusic = new Audio('music.mp3'); bgMusic.loop = true; bgMusic.volume = 0.3; 
@@ -724,16 +730,12 @@
             this.x = x; this.y = y;
             this.width = 60; this.height = 60;
             
-            // โหลดรูป
-            this.imageRound = new Image(); this.imageRound.src = 'enemy_spring_roll.png';
-            this.imageStraight = new Image(); this.imageStraight.src = 'enemy_spring_lunge.png';
-
+            // ✅ ใช้รูปที่ Preload ไว้แล้ว (ลดการกินแรมมหาศาล)
             this.speed = 1.5; 
             this.lungeSpeed = 22; 
             
             this.state = 'ROLLING';
             this.lungeRange = 250;
-            // ✅ ลดเลือดให้บางลง (25 + wave*2)
             this.maxHp = 25 + (wave * 2); 
             this.hp = this.maxHp;
             this.damage = 1;
@@ -779,16 +781,16 @@
             
             if (this.state === 'ROLLING') {
                 ctx.rotate(angleToPlayer); 
-                if (this.imageRound && this.imageRound.complete && this.imageRound.naturalHeight !== 0) {
-                    ctx.drawImage(this.imageRound, -this.width/2, -this.height/2, this.width, this.height);
+                if (springSpriteRoll.complete && springSpriteRoll.naturalHeight !== 0) {
+                    ctx.drawImage(springSpriteRoll, -this.width/2, -this.height/2, this.width, this.height);
                 } else {
                     ctx.fillStyle = 'orange'; ctx.beginPath(); ctx.arc(0, 0, this.width/2, 0, Math.PI*2); ctx.fill();
                 }
             } 
             else if (this.state === 'LUNGING') {
                 ctx.rotate(angleToPlayer + Math.PI / 2); 
-                if (this.imageStraight && this.imageStraight.complete && this.imageStraight.naturalHeight !== 0) {
-                    ctx.drawImage(this.imageStraight, -this.straightWidth/2, -this.straightHeight*0.75, this.straightWidth, this.straightHeight);
+                if (springSpriteLunge.complete && springSpriteLunge.naturalHeight !== 0) {
+                    ctx.drawImage(springSpriteLunge, -this.straightWidth/2, -this.straightHeight*0.75, this.straightWidth, this.straightHeight);
                 } else {
                     ctx.fillStyle = 'red'; ctx.fillRect(-this.straightWidth/2, -this.straightHeight*0.75, this.straightWidth, this.straightHeight);
                 }
