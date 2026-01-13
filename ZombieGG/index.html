@@ -64,10 +64,9 @@
         .wave-box { font-size: 28px; color: #ef4444; display: flex; align-items: center; gap: 10px; }
         .timer-box { font-size: 20px; color: #fff; background: rgba(0,0,0,0.5); padding: 2px 8px; border-radius: 5px; }
         
-        /* ✅ ปรับปรุงแถบสถานะ: เพิ่มคริติคอลและเปลี่ยนไอคอน */
         .stat-row { 
             font-size: 16px; color: #ddd; margin-top: 5px; 
-            display: flex; gap: 10px; /* เว้นระยะห่าง */
+            display: flex; gap: 10px; 
         }
         
         .bar-wrap {
@@ -186,27 +185,16 @@
         .btn-disabled { filter: grayscale(100%); opacity: 0.5; cursor: not-allowed; pointer-events: auto; }
         /* ✅ โค้ดพิเศษสำหรับหน้าจอแนวตั้ง (Mobile Portrait) */
         @media only screen and (orientation: portrait) {
-            /* ย่อ Padding ขอบจอ */
             .hud-top { padding: 5px; }
-
-            /* ฝั่งซ้าย: ย่อตัวหนังสือคะแนน/เวฟ/สเตตัส */
             .score-box, .gold-box { font-size: 14px; }
             .wave-box { font-size: 18px; }
             .timer-box { font-size: 14px; padding: 1px 4px; }
             .stat-row { font-size: 11px; gap: 3px; margin-top: 2px; }
-
-            /* ฝั่งขวา: ย่อหลอดเลือด/เกราะ ให้สั้นลง */
             .bar-wrap { width: 130px; height: 16px; border-width: 1px; margin-bottom: 2px; }
             .hp-text { font-size: 9px; }
-            
-            /* ย่อปุ่มเมนู */
             .top-btn { font-size: 22px; margin-left: 5px; }
-
-            /* ย่อแถบเลเวลด้านล่าง */
             .level-badge { font-size: 12px; }
             .xp-wrap { width: 90px; height: 5px; }
-            
-            /* ป้องกันการชนกัน */
             .stats-left { max-width: 55%; }
             .bars-container { max-width: 45%; align-items: flex-end; }
         }
@@ -421,29 +409,12 @@
         const bossMusic = new Audio('boss_music.mp3'); bossMusic.loop = true; bossMusic.volume = 0.3;
         const gameOverSound = new Audio('gameover.mp3'); gameOverSound.volume = 0.2;
         const clickSound = new Audio('click.mp3'); clickSound.volume = 1;
-        // ✅ ระบบแก้เสียงหายบนมือถือ (Unlock Audio)
-        // เมื่อแตะหน้าจอครั้งแรก ให้สั่งเสียงเล่นเบาๆ แล้วหยุดทันที เพื่อปลดล็อคระบบ
+        
         document.addEventListener('touchstart', function() {
             if (bgMusic.paused) {
-                // กระตุ้นเสียงเพลง
-                bgMusic.play().then(() => {
-                    bgMusic.pause();
-                    bgMusic.currentTime = 0;
-                }).catch(() => {});
-                
-                // กระตุ้นเสียงคลิก
-                clickSound.play().then(() => {
-                    clickSound.pause();
-                    clickSound.currentTime = 0;
-                }).catch(() => {});
-                
-                // กระตุ้นเสียงปืน
-                if (audioPool.length > 0) {
-                    audioPool[0].play().then(() => {
-                        audioPool[0].pause();
-                        audioPool[0].currentTime = 0;
-                    }).catch(() => {});
-                }
+                bgMusic.play().then(() => { bgMusic.pause(); bgMusic.currentTime = 0; }).catch(() => {});
+                clickSound.play().then(() => { clickSound.pause(); clickSound.currentTime = 0; }).catch(() => {});
+                if (audioPool.length > 0) { audioPool[0].play().then(() => { audioPool[0].pause(); audioPool[0].currentTime = 0; }).catch(() => {}); }
             }
         }, { once: true });
 
@@ -480,7 +451,7 @@
         }
 
         let gameActive=false, isPaused=false, score=0, gold=0, wave=1;
-        let enemies=[], projectiles=[], particles=[], enemyProjectiles=[];
+        let enemies=[], projectiles=[], particles=[], enemyProjectiles=[], springEnemies=[];
         let animationId, regenInterval, autoSaveInterval, spawnTimer=0, waveActive=false, bossesToSpawn = 0, waveTimer = 0, waveFrameCount = 0;
 
         const player={x:0,y:0,r:20,color:'#3b82f6',speed:4, baseSpeed:4, slowStacks:0, slowTimer:0, hp:100,maxHp:100,lvl:1,xp:0,xpNeed:100,dmg:1,pSize:6,turrets:1,regen:5,fireRate:15,fireCooldown:0, frost: false, fire: false, crit: 0, shield: 0, maxShield: 100};
@@ -590,7 +561,6 @@
                 gold -= cost; ui.shopGold.innerText = gold; updateHud();
                 if(id === 'heal') { player.hp = Math.min(player.hp + 80, player.maxHp); createFloatingText("+80 HP", canvas.width/2, canvas.height/2, '#22c55e'); }
                 else if(id === 'shield') { 
-                    // ✅ ปรับเกาะ: เพิ่ม 60
                     player.shield = Math.min(player.shield + 60, player.maxShield); 
                     createFloatingText("+60 Shield", canvas.width/2, canvas.height/2, '#3b82f6'); 
                 }
@@ -600,10 +570,47 @@
             } else { const originalColor = ui.shopGold.style.color; ui.shopGold.style.color = 'red'; setTimeout(() => ui.shopGold.style.color = originalColor, 200); }
         }
 
+        // --------------------------------------------------------
+        // ✅ [แก้ไข] ฟังก์ชัน animate: ลบภาพก่อนวาด และระบบ Heavy Slow
+        // --------------------------------------------------------
         function animate() {
-            if(!gameActive) return; animationId=requestAnimationFrame(animate);
-            if(isPaused) return; 
+            if(!gameActive) return; 
+            animationId = requestAnimationFrame(animate);
+            
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if(isPaused) return; 
+
+            // --- วาด Spring Enemy (มอนสเตอร์ใหม่) ---
+            for (let i = springEnemies.length - 1; i >= 0; i--) {
+                const s = springEnemies[i];
+                s.update(player); 
+                s.draw(ctx);      
+
+                if (s.markedForDeletion) {
+                    springEnemies.splice(i, 1);
+                    continue;
+                }
+
+                // เช็คโดนกระสุน
+                for (let j = projectiles.length - 1; j >= 0; j--) {
+                    const p = projectiles[j];
+                    if (Math.hypot(p.x - s.x, p.y - s.y) < s.width/2 + p.r) {
+                        createExplosion(s.x, s.y, '#ef4444');
+                        s.hp -= player.dmg;
+                        p.hits--; 
+                        if(player.frost) s.speed *= 0.5; 
+                        
+                        if (s.hp <= 0) {
+                            score += 5; gainXp(30); 
+                            s.markedForDeletion = true;
+                        }
+                        if(p.hits <= 0) projectiles.splice(j, 1);
+                    }
+                }
+            }
+
+            // --- ระบบ Wave และ Logic เกมเดิม ---
             if(waveActive) {
                 waveFrameCount++; if(waveFrameCount >= 60) { waveTimer--; waveFrameCount = 0; if(waveTimer < 0) waveTimer = 0; ui.timer.innerText = formatTime(waveTimer); }
                 if (waveTimer > 0) { spawnTimer++; const spawnRate = Math.max(20, 60 - wave * 2); if(spawnTimer > spawnRate) { spawnEnemy(); spawnTimer=0; }
@@ -631,7 +638,6 @@
                 const p = enemyProjectiles[i]; p.update();
                 if(p.x<0||p.x>canvas.width||p.y<0||p.y>canvas.height) { enemyProjectiles.splice(i,1);
                 } else if(Math.hypot(p.x-player.x, p.y-player.y) < p.r + player.r) { 
-                    // โดนยิง (Damage) - หักเกาะก่อน
                     if (player.shield > 0) {
                         if (player.shield >= p.dmg) { player.shield -= p.dmg; } 
                         else { let rem = p.dmg - player.shield; player.shield = 0; player.hp -= rem; }
@@ -646,7 +652,6 @@
             for(let i = enemies.length - 1; i >= 0; i--) {
                 const e = enemies[i]; e.update();
                 if(Math.hypot(player.x-e.x, player.y-e.y)-e.r-player.r < 1) { 
-                    // ชนซอมบี้ (Damage 15) - หักเกาะก่อน
                     const crashDmg = 15;
                     if (player.shield > 0) {
                         if (player.shield >= crashDmg) { player.shield -= crashDmg; } 
@@ -714,6 +719,97 @@
             } 
         }
         
+    class SpringEnemy {
+        constructor(game, x, y) {
+            this.x = x; this.y = y;
+            this.width = 60; this.height = 60;
+            
+            // โหลดรูป
+            this.imageRound = new Image(); this.imageRound.src = 'enemy_spring_roll.png';
+            this.imageStraight = new Image(); this.imageStraight.src = 'enemy_spring_lunge.png';
+
+            this.speed = 1.5; 
+            this.lungeSpeed = 22; 
+            
+            this.state = 'ROLLING';
+            this.lungeRange = 250;
+            // ✅ ลดเลือดให้บางลง (25 + wave*2)
+            this.maxHp = 25 + (wave * 2); 
+            this.hp = this.maxHp;
+            this.damage = 1;
+            this.markedForDeletion = false;
+            
+            this.straightWidth = 32; this.straightHeight = 120;
+        }
+
+        update(player) {
+            const dx = player.x - this.x;
+            const dy = player.y - this.y;
+            const distance = Math.sqrt(dx*dx + dy*dy);
+            const angle = Math.atan2(dy, dx);
+
+            if (this.state === 'ROLLING') {
+                this.x += Math.cos(angle) * this.speed;
+                this.y += Math.sin(angle) * this.speed;
+                if (distance < this.lungeRange) this.state = 'LUNGING';
+            } 
+            else if (this.state === 'LUNGING') {
+                this.x += Math.cos(angle) * this.lungeSpeed;
+                this.y += Math.sin(angle) * this.lungeSpeed;
+            }
+
+            // ชนผู้เล่น
+            if (this.checkCollision(player)) {
+                if (player.shield > 0) player.shield = Math.max(0, player.shield - this.damage);
+                else player.hp -= this.damage;
+                
+                // ✅ Heavy Slow Effect (หนืดสะใจ)
+                player.slowTimer = 150; // โดนไป 2.5 วินาที
+                player.speed = player.baseSpeed * 0.15; // เหลือความเร็วแค่ 15% (เดินไม่ออก!)
+                createFloatingText("GLUED!", player.x, player.y - 50, '#a855f7');
+
+                this.markedForDeletion = true;
+            }
+        }
+
+        draw(ctx) {
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            let angleToPlayer = Math.atan2(player.y - this.y, player.x - this.x);
+            
+            if (this.state === 'ROLLING') {
+                ctx.rotate(angleToPlayer); 
+                if (this.imageRound && this.imageRound.complete && this.imageRound.naturalHeight !== 0) {
+                    ctx.drawImage(this.imageRound, -this.width/2, -this.height/2, this.width, this.height);
+                } else {
+                    ctx.fillStyle = 'orange'; ctx.beginPath(); ctx.arc(0, 0, this.width/2, 0, Math.PI*2); ctx.fill();
+                }
+            } 
+            else if (this.state === 'LUNGING') {
+                ctx.rotate(angleToPlayer + Math.PI / 2); 
+                if (this.imageStraight && this.imageStraight.complete && this.imageStraight.naturalHeight !== 0) {
+                    ctx.drawImage(this.imageStraight, -this.straightWidth/2, -this.straightHeight*0.75, this.straightWidth, this.straightHeight);
+                } else {
+                    ctx.fillStyle = 'red'; ctx.fillRect(-this.straightWidth/2, -this.straightHeight*0.75, this.straightWidth, this.straightHeight);
+                }
+            }
+            ctx.restore();
+
+            // ✅ เพิ่มหลอดเลือด (HP Bar)
+            if (this.hp < this.maxHp) {
+                ctx.fillStyle = 'red';
+                ctx.fillRect(this.x - 15, this.y - this.height/2 - 10, 30, 4);
+                ctx.fillStyle = '#22c55e';
+                ctx.fillRect(this.x - 15, this.y - this.height/2 - 10, 30 * (this.hp / this.maxHp), 4);
+            }
+        }
+
+        checkCollision(p) {
+            const size = (this.state === 'ROLLING') ? this.width : this.straightHeight/2;
+            return Math.hypot(this.x - p.x, this.y - p.y) < (size/2 + p.r);
+        }
+    }
+
         function drawStatic(aimAngle) { 
             let angle = aimAngle || 0;
             if(!mouse.down && !touchAim.active && touchMove.id !== null) angle = Math.atan2(touchMove.vec.y, touchMove.vec.x);
@@ -795,22 +891,49 @@
 
         function startWaveCountdown(seconds) { let count = seconds; ui.announce.innerText = count; ui.announce.style.opacity = 1; let timer = setInterval(() => { count--; if (count > 0) ui.announce.innerText = count; else { clearInterval(timer); ui.announce.innerText = "START!"; setTimeout(() => { ui.announce.style.opacity = 0; startNextWave(); }, 1000); } }, 1000); }
 
-        function startNextWave() { document.getElementById('shop-btn').classList.add('btn-disabled'); waveActive = true; spawnTimer = 0; ui.wave.innerText = `WAVE ${wave}`; waveTimer = 30 + ((wave - 1) * 5); ui.timer.innerText = formatTime(waveTimer); if (wave % 5 === 0) { bossesToSpawn = Math.floor(wave / 5); ui.announce.innerText = "BOSS WAVE!"; ui.announce.style.opacity = 1; bgMusic.pause(); bossMusic.currentTime = 0; bossMusic.play().catch(()=>{}); setTimeout(() => ui.announce.style.opacity = 0, 2000); } else { bossesToSpawn = 0; bossMusic.pause(); if (bgMusic.paused) bgMusic.play().catch(()=>{}); } }
+        function startNextWave() { 
+            // ✅ ตั้งค่า Wave 7 มอนสเตอร์สปริงเกิด
+            if (wave >= 7 && (wave - 7) % 2 === 0) {
+                let count = 3 + ((wave - 7) / 2 * 2);
+                for(let i=0; i<count; i++) {
+                    let sx, sy;
+                    if(Math.random()<.5){sx=Math.random()<.5?-50:canvas.width+50; sy=Math.random()*canvas.height;}
+                    else{sx=Math.random()*canvas.width; sy=Math.random()<.5?-50:canvas.height+50;}
+                    springEnemies.push(new SpringEnemy(null, sx, sy));
+                }
+                createFloatingText("BEWARE! JUMPERS!", canvas.width/2, canvas.height/2 + 50, '#ef4444');
+            }
+
+            document.getElementById('shop-btn').classList.add('btn-disabled'); 
+            waveActive = true; 
+            spawnTimer = 0; 
+            ui.wave.innerText = `WAVE ${wave}`; 
+            waveTimer = 30 + ((wave - 1) * 5); 
+            ui.timer.innerText = formatTime(waveTimer); 
+            
+            if (wave % 5 === 0) { 
+                bossesToSpawn = Math.floor(wave / 5); 
+                ui.announce.innerText = "BOSS WAVE!"; 
+                ui.announce.style.opacity = 1; 
+                bgMusic.pause(); 
+                bossMusic.currentTime = 0; 
+                bossMusic.play().catch(()=>{}); 
+                setTimeout(() => ui.announce.style.opacity = 0, 2000); 
+            } else { 
+                bossesToSpawn = 0; 
+                bossMusic.pause(); 
+                if (bgMusic.paused) bgMusic.play().catch(()=>{}); 
+            } 
+        }
 
         function updateHud() { 
             ui.score.innerText=score; ui.gold.innerText=gold; ui.dmg.innerText=player.dmg; ui.regen.innerText=player.regen; 
-            
-            // Update HP
             ui.hpFill.style.width=(player.hp/player.maxHp*100)+'%'; 
             ui.hpText.innerText=`HP. ${Math.ceil(player.hp)}/${player.maxHp}`; 
-            
-            // ✅ Update Shield & Crit
             const shieldPercent = (player.shield / player.maxShield) * 100;
             document.getElementById('shieldFill').style.width = shieldPercent + '%';
             document.getElementById('shieldText').innerText = `Dev. ${Math.ceil(player.shield)}/${player.maxShield}`;
             document.getElementById('critVal').innerText = Math.round(player.crit * 100) + '%';
-
-            // Update Level
             ui.lvl.innerText=player.lvl>=30?'MAX':'Lv.'+player.lvl; 
             ui.xpFill.style.width=player.lvl>=30?'100%':(player.xp/player.xpNeed*100)+'%'; 
         }
@@ -818,8 +941,16 @@
         function startGame() {
             if (!currentPlayerName || currentPlayerName === "Survivor") { const inputName = ui.nameInput.value.trim(); if(!inputName) { alert("กรุณาใส่ชื่อก่อนเริ่มเกม!"); return; } currentPlayerName = inputName; }
             playClickSound();
-            gameActive = true; isPaused = false; score = 0; gold=0; wave = 1; resize(); player.x=canvas.width/2; player.y=canvas.height/2; player.hp=100; player.maxHp=100; player.lvl=1; player.xp=0; player.xpNeed=100; player.dmg=1; player.turrets=1; player.regen=5; player.baseSpeed=4; player.speed=4; player.slowStacks=0; player.slowTimer=0; player.frost = false; player.fire = false; player.crit = 0; player.shield=0; player.maxShield=100;
-            enemies=[]; projectiles=[]; particles=[]; enemyProjectiles=[]; bossMusic.pause(); bossMusic.currentTime = 0; gameOverSound.pause(); gameOverSound.currentTime = 0; bgMusic.currentTime = 0; bgMusic.play().catch(()=>{}); ui.start.classList.add('hidden'); ui.over.classList.add('hidden'); updateHud(); startNextWave(); startRegen(); startAutoSave(); animate();
+            gameActive = true; isPaused = false; score = 0; gold=0; 
+            
+            // ✅ ตั้งค่าเริ่มที่ Wave 7 เพื่อทดสอบ
+            wave = 1; 
+            
+            resize(); player.x=canvas.width/2; player.y=canvas.height/2; player.hp=100; player.maxHp=100; player.lvl=1; player.xp=0; player.xpNeed=100; player.dmg=1; player.turrets=1; player.regen=5; player.baseSpeed=4; player.speed=4; player.slowStacks=0; player.slowTimer=0; player.frost = false; player.fire = false; player.crit = 0; player.shield=0; player.maxShield=100;
+            
+            enemies=[]; projectiles=[]; particles=[]; enemyProjectiles=[]; springEnemies=[]; 
+            
+            bossMusic.pause(); bossMusic.currentTime = 0; gameOverSound.pause(); gameOverSound.currentTime = 0; bgMusic.currentTime = 0; bgMusic.play().catch(()=>{}); ui.start.classList.add('hidden'); ui.over.classList.add('hidden'); updateHud(); startNextWave(); startRegen(); startAutoSave(); animate();
         }
 
         function gameOver() { 
@@ -830,6 +961,3 @@
     </script>
 </body>
 </html>
-
-
-
