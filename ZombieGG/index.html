@@ -414,7 +414,6 @@
         const canvas = document.getElementById('gameCanvas'); const ctx = canvas.getContext('2d');
         const ui={start:document.getElementById('startScreen'),over:document.getElementById('gameOverScreen'),upgrade:document.getElementById('upgradeScreen'),settings:document.getElementById('settingsScreen'),shop:document.getElementById('shopScreen'),shopGold:document.getElementById('shopGoldVal'),shopFire:document.getElementById('shop-fire'),cards:document.getElementById('cardContainer'),score:document.getElementById('scoreVal'),gold:document.getElementById('goldVal'),wave:document.getElementById('waveText'),timer:document.getElementById('timerText'),dmg:document.getElementById('dmgVal'),regen:document.getElementById('regenVal'),hpFill:document.getElementById('healthFill'),hpText:document.getElementById('hpText'),xpFill:document.getElementById('xpFill'),lvl:document.getElementById('levelDisplay'),announce:document.getElementById('waveAnnouncement'),float:document.getElementById('floatingTextContainer'),finalScore:document.getElementById('finalScore'),finalWave:document.getElementById('finalWave'),joyMove:document.getElementById('joy-move'),joyAim:document.getElementById('joy-aim'),rotateMsg:document.getElementById('rotate-message'),nameInput:document.getElementById('name-input'), reviveScreen:document.getElementById('reviveScreen')};
 
-        // ✅ Preload ระบบโหลดภาพล่วงหน้า
         const playerImage = new Image(); playerImage.src = 'player.png'; 
         const enemyImages = { normal: new Image(), big: new Image(), runner: new Image(), zigzag: new Image(), titan: new Image() };
         enemyImages.normal.src = 'zombie_normal.png'; enemyImages.big.src = 'zombie_big.png'; enemyImages.runner.src = 'zombie_runner.png'; enemyImages.zigzag.src = 'zombie_zigzag.png'; enemyImages.titan.src = 'zombie_titan.png';
@@ -422,7 +421,6 @@
         const springSpriteRoll = new Image(); springSpriteRoll.src = 'enemy_spring_roll.png';
         const springSpriteLunge = new Image(); springSpriteLunge.src = 'enemy_spring_lunge.png';
 
-        // ✅ กลับมาใช้เพลงเดียว (music.mp3) วนลูป
         let bgmVolume = 0.1; let sfxVolume = 1.0; 
         
         const bgMusic = new Audio('music.mp3'); 
@@ -487,8 +485,8 @@
         const isMobile=/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
         function resize() { 
-            // ✅ Optimize: จำกัด Ratio ไม่ให้เกิน 2 (เพื่อคุณภาพที่ดีบนมือถือ) แต่ไม่สูงเกินไปจนเครื่องร้อน
-            const ratio = isMobile ? Math.min(window.devicePixelRatio, 2) : 1;
+            // ✅ Optimize: จำกัด Device Pixel Ratio ไม่เกิน 1.5 เพื่อความลื่นบนจอมือถือความละเอียดสูง
+            const ratio = isMobile ? Math.min(window.devicePixelRatio, 1.5) : 1;
             
             if (window.visualViewport) { 
                 canvas.width = window.visualViewport.width * ratio; 
@@ -505,7 +503,7 @@
 
             if(!gameActive){player.x = (canvas.width/ratio)/2; player.y = (canvas.height/ratio)/2;} 
             
-            // ✅ Fix: เปิด Image Smoothing เพื่อแก้ภาพกระตุก (สมูทขึ้น)
+            // ✅ Optimize: เปิด Image Smoothing เพื่อแก้ภาพกระตุก (Smooth Fix)
             ctx.imageSmoothingEnabled = true;
         }
         window.addEventListener('resize', resize);
@@ -527,8 +525,8 @@
 
         // ✅ แก้ไขระบบสัมผัส (Touch) ให้เสถียร และไม่บล็อกการกดปุ่ม UI
         function handleTouch(e) {
-            // 🛑 ถ้าแตะโดนปุ่มหรือร้านค้า -> ปล่อยผ่าน (ไม่ preventDefault)
-            if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || e.target.closest('.shop-grid') || e.target.closest('.scrollable-area')) {
+            // ✅ อนุญาตให้กดปุ่มในหน้า UI ต่างๆ ได้ (รวม Upgrade Screen)
+            if (e.target.closest('.menu-screen') || e.target.closest('.top-btn')) {
                 return; 
             }
             
@@ -691,7 +689,7 @@
             animationId = requestAnimationFrame(animate);
             
             // ✅ ใช้ขนาด Canvas ตาม Ratio ที่คำนวณไว้
-            const ratio = isMobile ? Math.min(window.devicePixelRatio, 2) : 1;
+            const ratio = isMobile ? Math.min(window.devicePixelRatio, 1.5) : 1;
             ctx.clearRect(0, 0, canvas.width/ratio, canvas.height/ratio);
 
             if(isPaused) return; 
@@ -736,7 +734,7 @@
             if(mx!==0||my!==0){ if(touchMove.id===null){const l=Math.hypot(mx,my);mx/=l;my/=l;} player.x+=mx*player.speed; player.y+=my*player.speed; const bottomPadding = isMobile ? 40 : 0; 
             
             // ✅ แก้ไขขอบเขตการเดินให้ถูกต้องตาม Scale
-            const ratio = isMobile ? Math.min(window.devicePixelRatio, 2) : 1;
+            const ratio = isMobile ? Math.min(window.devicePixelRatio, 1.5) : 1;
             const boundsW = canvas.width / ratio;
             const boundsH = canvas.height / ratio;
             player.x=Math.max(player.r,Math.min(boundsW-player.r,player.x)); player.y=Math.max(player.r,Math.min(boundsH-player.r-bottomPadding,player.y)); }
@@ -748,14 +746,14 @@
             for(let i = particles.length - 1; i >= 0; i--) { const p = particles[i]; if(p.a <= 0) particles.splice(i, 1); else p.update(); }
             for(let i = projectiles.length - 1; i >= 0; i--) { const p = projectiles[i]; p.update(); 
                 // ✅ แก้ไขขอบเขตกระสุน
-                const ratio = isMobile ? Math.min(window.devicePixelRatio, 2) : 1;
+                const ratio = isMobile ? Math.min(window.devicePixelRatio, 1.5) : 1;
                 if(p.x<0||p.x>canvas.width/ratio||p.y<0||p.y>canvas.height/ratio||p.hits<=0) projectiles.splice(i, 1); 
             }
             
             for(let i = enemyProjectiles.length - 1; i >= 0; i--) {
                 const p = enemyProjectiles[i]; p.update();
                 // ✅ แก้ไขขอบเขตกระสุนศัตรู
-                const ratio = isMobile ? Math.min(window.devicePixelRatio, 2) : 1;
+                const ratio = isMobile ? Math.min(window.devicePixelRatio, 1.5) : 1;
                 if(p.x<0||p.x>canvas.width/ratio||p.y<0||p.y>canvas.height/ratio) { enemyProjectiles.splice(i,1);
                 } else if(Math.hypot(p.x-player.x, p.y-player.y) < p.r + player.r) { 
                     if (player.shield > 0) {
@@ -1043,7 +1041,7 @@
                 bossesToSpawn = 0; 
                 bossMusic.pause(); 
                 
-                // ✅ เล่นเพลงเดียววนลูป
+                // ✅ แก้เพลงหาย: ถ้าไม่ใช่บอส ให้เล่นเพลงเดิมต่อ
                 if (bgMusic.paused) {
                     bgMusic.play().catch(()=>{});
                 }
