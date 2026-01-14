@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no, viewport-fit=cover">
-    <title>Zombie Defense: Fire & Ice</title>
+    <title>Zombie Defense: Fire & Ice (Skin Update)</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     
@@ -183,7 +183,41 @@
         .shop-gold { font-size: 24px; color: #facc15; font-weight: bold; margin-bottom: 10px; }
         .fire-text { color: #ef4444 !important; font-weight: bold; }
         .btn-disabled { filter: grayscale(100%); opacity: 0.5; cursor: not-allowed; pointer-events: auto; }
-        /* ✅ โค้ดพิเศษสำหรับหน้าจอแนวตั้ง (Mobile Portrait) */
+        
+        /* ✅ สไตล์สำหรับหน้าเมนูใหม่และร้านค้าสกิน */
+        .main-menu-btn {
+            width: 250px; padding: 15px; font-size: 24px; margin: 10px 0;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        .token-display {
+            background: rgba(0,0,0,0.6); padding: 10px 20px; border-radius: 20px;
+            border: 1px solid #fbbf24; font-size: 20px; color: white; margin-bottom: 10px;
+        }
+        .skin-grid {
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;
+            width: 100%; max-width: 600px; max-height: 60vh; overflow-y: auto;
+            padding: 10px;
+        }
+        .skin-card {
+            background: #1f2937; border: 2px solid #4b5563; border-radius: 12px;
+            padding: 15px; display: flex; flex-direction: column; align-items: center;
+            cursor: pointer; transition: all 0.2s; position: relative;
+        }
+        .skin-card:active { transform: scale(0.95); }
+        .skin-preview {
+            width: 50px; height: 50px; border-radius: 50%; 
+            margin-bottom: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            border: 2px solid white; display: flex; justify-content: center; align-items: center; font-size: 24px;
+        }
+        /* สถานะของสกิน */
+        .skin-card.locked { opacity: 0.6; filter: grayscale(0.8); }
+        .skin-card.owned { border-color: #22c55e; background: #064e3b; }
+        .skin-card.selected { border-color: #fbbf24; box-shadow: 0 0 15px #fbbf24; background: #451a03; }
+        
+        .skin-name { font-weight: bold; color: white; margin-bottom: 5px; }
+        .skin-cost { color: #facc15; font-size: 14px; }
+        .skin-status { font-size: 12px; margin-top: 5px; padding: 2px 8px; border-radius: 4px; background: #333; }
+
         @media only screen and (orientation: portrait) {
             .hud-top { padding: 5px; }
             .score-box, .gold-box { font-size: 14px; }
@@ -197,6 +231,8 @@
             .xp-wrap { width: 90px; height: 5px; }
             .stats-left { max-width: 55%; }
             .bars-container { max-width: 45%; align-items: flex-end; }
+            .skin-grid { grid-template-columns: repeat(2, 1fr); max-width: 90%; }
+            .main-menu-btn { width: 80%; font-size: 20px; }
         }
     </style>
 
@@ -260,7 +296,7 @@
     <div class="menu-screen" id="startScreen">
         <h1 style="font-size: 40px; color: #ef4444; margin: 0;">LAST STAND</h1>
         <input type="text" id="name-input" placeholder="ใส่ชื่อเล่นของคุณ" maxlength="12">
-        <button class="btn" onclick="startGame()">เริ่มเกม</button>
+        <button class="btn" onclick="goToMainMenuInit()">เข้าสู่เกม</button>
         <div class="leaderboard-container">
             <div class="lb-title">🏆 อันดับวันนี้ (Reset Daily)</div>
             <table class="lb-table">
@@ -274,6 +310,38 @@
                 </tbody>
             </table>
         </div>
+    </div>
+
+    <div class="menu-screen hidden" id="mainMenuScreen">
+        <h1 style="font-size: 50px; color: #ef4444; margin-bottom: 5px; text-shadow: 0 0 10px #ef4444;">LAST STAND</h1>
+        <div style="font-size: 20px; color: #fbbf24; margin-bottom: 20px;">
+            สวัสดี, <span id="menuPlayerName" style="color:white; font-weight:bold;">Survivor</span>
+        </div>
+        
+    <div class="token-display">
+    <img src="token.png" style="width: 35px; height: 35px; vertical-align: middle; margin-right: 5px; border-radius: 50%;"> 
+    Token สะสม: <span id="globalTokenDisplay" style="color:#fbbf24; font-weight:bold;">0</span>
+</div>
+
+        <button class="btn main-menu-btn" onclick="startActualGame()">🎮 เริ่มภารกิจ (Play)</button>
+        <button class="btn main-menu-btn" style="background: #3b82f6; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);" onclick="openPermanentShop()">👕 ร้านค้าสกิน (Skins)</button>
+        
+        <div style="margin-top: 20px; font-size: 14px; color: #888; cursor:pointer;" onclick="location.reload()">
+            (เปลี่ยนชื่อ / กลับหน้าแรก)
+        </div>
+    </div>
+
+    <div class="menu-screen hidden" id="permanentShopScreen">
+        <h1 style="color: #3b82f6; margin-bottom: 10px;">SKIN STORE</h1>
+        <div class="token-display" style="margin-bottom: 15px;">
+    <img src="token.png" style="width: 35px; height: 35px; vertical-align: middle; margin-right: 5px; border-radius: 50%;"> 
+    ของคุณ: <span id="shopTokenDisplay" style="color:#fbbf24; font-weight:bold;">0</span>
+</div>
+        
+        <div class="skin-grid" id="skinGrid">
+            </div>
+
+        <button class="btn" style="background: #4b5563; margin-top: 20px;" onclick="closePermanentShop()">กลับเมนูหลัก</button>
     </div>
 
     <div class="menu-screen hidden" id="upgradeScreen">
@@ -341,8 +409,7 @@
                 <tbody id="lb-body-over"></tbody>
             </table>
         </div>
-        <button class="btn" onclick="restartGame()">เล่นใหม่อีกครั้ง</button>
-        <button class="btn" style="background: #4b5563; margin-left: 10px;" onclick="goToHome()">กลับหน้าหลัก</button>
+        <button class="btn" onclick="restartGameToMenu()">กลับเมนูหลัก</button>
     </div>
 
     <script>
@@ -414,7 +481,7 @@
         const canvas = document.getElementById('gameCanvas'); const ctx = canvas.getContext('2d');
         const ui={start:document.getElementById('startScreen'),over:document.getElementById('gameOverScreen'),upgrade:document.getElementById('upgradeScreen'),settings:document.getElementById('settingsScreen'),shop:document.getElementById('shopScreen'),shopGold:document.getElementById('shopGoldVal'),shopFire:document.getElementById('shop-fire'),cards:document.getElementById('cardContainer'),score:document.getElementById('scoreVal'),gold:document.getElementById('goldVal'),wave:document.getElementById('waveText'),timer:document.getElementById('timerText'),dmg:document.getElementById('dmgVal'),regen:document.getElementById('regenVal'),hpFill:document.getElementById('healthFill'),hpText:document.getElementById('hpText'),xpFill:document.getElementById('xpFill'),lvl:document.getElementById('levelDisplay'),announce:document.getElementById('waveAnnouncement'),float:document.getElementById('floatingTextContainer'),finalScore:document.getElementById('finalScore'),finalWave:document.getElementById('finalWave'),joyMove:document.getElementById('joy-move'),joyAim:document.getElementById('joy-aim'),rotateMsg:document.getElementById('rotate-message'),nameInput:document.getElementById('name-input'), reviveScreen:document.getElementById('reviveScreen')};
 
-        // ✅ Preload ระบบโหลดภาพล่วงหน้า (แก้กระตุกบนมือถือ)
+        // ✅ Preload ระบบโหลดภาพล่วงหน้า
         const playerImage = new Image(); playerImage.src = 'player.png'; 
         const enemyImages = { normal: new Image(), big: new Image(), runner: new Image(), zigzag: new Image(), titan: new Image() };
         enemyImages.normal.src = 'zombie_normal.png'; enemyImages.big.src = 'zombie_big.png'; enemyImages.runner.src = 'zombie_runner.png'; enemyImages.zigzag.src = 'zombie_zigzag.png'; enemyImages.titan.src = 'zombie_titan.png';
@@ -422,7 +489,6 @@
         const springSpriteRoll = new Image(); springSpriteRoll.src = 'enemy_spring_roll.png';
         const springSpriteLunge = new Image(); springSpriteLunge.src = 'enemy_spring_lunge.png';
 
-        // ✅ กลับมาใช้เพลงเดียว (music.mp3) วนลูป
         let bgmVolume = 0.1; let sfxVolume = 1.0; 
         
         const bgMusic = new Audio('music.mp3'); 
@@ -486,10 +552,39 @@
         let mouse={x:0,y:0,down:false}, touchMove={id:null,startX:0,startY:0,vec:{x:0,y:0}}, touchAim={id:null,startX:0,startY:0,angle:0,active:false};
         const isMobile=/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
+        // ✅ 1. ระบบข้อมูลผู้เล่น (Token และ Skins)
+        let playerToken = 0;
+        let ownedSkins = ['default']; 
+        let equippedSkin = 'default';
+
+        // รายชื่อสกินทั้งหมด
+        const skinDatabase = [
+            { id: 'default', name: 'Survivor', cost: 0, color: '#3b82f6', emoji: '' },
+            { id: 'red', name: 'Red Ranger', cost: 2000, color: '#ef4444', emoji: '' },
+            { id: 'neon', name: 'Neon Cyber', cost: 5000, color: '#06b6d4', emoji: '' },
+            { id: 'gold', name: 'The King', cost: 10000, color: '#fbbf24', emoji: '👑' },
+            { id: 'dark', name: 'Shadow Ops', cost: 15000, color: '#111827', emoji: '🥷' },
+            { id: 'pink', name: 'Sweet Pink', cost: 3000, color: '#ec4899', emoji: '🎀' }
+        ];
+
+        function loadPlayerData() {
+            const data = JSON.parse(localStorage.getItem('zombie_save_v1') || '{}');
+            playerToken = data.token || 0;
+            ownedSkins = data.skins || ['default'];
+            equippedSkin = data.equipped || 'default';
+        }
+        
+        function savePlayerData() {
+            localStorage.setItem('zombie_save_v1', JSON.stringify({
+                token: playerToken,
+                skins: ownedSkins,
+                equipped: equippedSkin
+            }));
+        }
+        loadPlayerData(); // โหลดข้อมูลทันที
+
         function resize() { 
-            // ✅ Optimize: จำกัด Device Pixel Ratio ไม่เกิน 1.5 เพื่อความลื่นบนจอมือถือความละเอียดสูง
             const ratio = isMobile ? Math.min(window.devicePixelRatio, 1.5) : 1;
-            
             if (window.visualViewport) { 
                 canvas.width = window.visualViewport.width * ratio; 
                 canvas.height = window.visualViewport.height * ratio;
@@ -502,10 +597,7 @@
                 canvas.style.height = window.innerHeight + 'px';
             }
             ctx.scale(ratio, ratio);
-
             if(!gameActive){player.x = (canvas.width/ratio)/2; player.y = (canvas.height/ratio)/2;} 
-            
-            // ✅ Optimize: เปิด Image Smoothing เพื่อแก้ภาพกระตุก (Smooth Fix)
             ctx.imageSmoothingEnabled = true;
         }
         window.addEventListener('resize', resize);
@@ -525,19 +617,11 @@
         window.addEventListener('mousedown', ()=>mouse.down=true);
         window.addEventListener('mouseup', ()=>mouse.down=false);
 
-        // ✅ แก้ไขระบบสัมผัส (Touch) ให้เสถียร และไม่บล็อกการกดปุ่ม UI
         function handleTouch(e) {
-            // ✅ อนุญาตให้กดปุ่มในหน้า UI ต่างๆ ได้ (รวม Upgrade Screen)
-            if (e.target.closest('.menu-screen') || e.target.closest('.top-btn')) {
-                return; 
-            }
-            
-            // 🛑 ถ้าแตะที่ว่าง (เล่นเกม) -> กันการเลื่อนหน้าจอ
+            if (e.target.closest('.menu-screen') || e.target.closest('.top-btn')) { return; }
             if(e.cancelable) e.preventDefault(); 
-            
             if(ui.rotateMsg && ui.rotateMsg.offsetWidth > 0 && ui.rotateMsg.style.display !== 'none') return;
             if(!gameActive || isPaused) return; 
-            
             if(e.touches.length === 0){ resetJoy(touchMove, ui.joyMove); resetJoy(touchAim, ui.joyAim); return; }
 
             let mF = false, aF = false;
@@ -656,7 +740,6 @@
 
         function handleDeathOrRevive() {
             if (player.hasRevive) {
-                // หยุดเกมชั่วคราวและแสดงหน้า Revive UI
                 gameActive = false; 
                 cancelAnimationFrame(animationId);
                 ui.reviveScreen.classList.remove('hidden');
@@ -665,38 +748,26 @@
             }
         }
 
-        // ✅ ฟังก์ชันยืนยันการใช้ไอเทม (กดจากหน้า UI)
         function confirmRevive() {
             playClickSound();
             ui.reviveScreen.classList.add('hidden');
             gameActive = true;
-            
-            // เพิ่มจำนวนการตาย (นับรวมตอนใช้กันตายด้วย)
             deathCount++; 
-            
-            // รีเซ็ตสถานะและเลือด
             player.hp = player.maxHp;
             player.hasRevive = false;
-            
             createExplosion(player.x, player.y, '#ffffff');
             createFloatingText("😇 REVIVED!", player.x, player.y - 50, '#ffffff');
-            
-            // ผลักศัตรูออกไป
             enemies.forEach(e => { let a = Math.atan2(e.y - player.y, e.x - player.x); e.x += Math.cos(a) * 200; e.y += Math.sin(a) * 200; });
             springEnemies.forEach(s => { let a = Math.atan2(s.y - player.y, s.x - player.x); s.x += Math.cos(a) * 200; s.y += Math.sin(a) * 200; });
-            
             updateHud();
-            animate(); // กลับมาเล่นต่อ
+            animate(); 
         }
 
         function animate() {
             if(!gameActive) return; 
             animationId = requestAnimationFrame(animate);
-            
-            // ✅ ใช้ขนาด Canvas ตาม Ratio ที่คำนวณไว้
             const ratio = isMobile ? Math.min(window.devicePixelRatio, 1.5) : 1;
             ctx.clearRect(0, 0, canvas.width/ratio, canvas.height/ratio);
-
             if(isPaused) return; 
 
             for (let i = springEnemies.length - 1; i >= 0; i--) {
@@ -723,11 +794,8 @@
                     if ((wave + 1) % 5 === 0) { document.getElementById('shop-btn').classList.remove('btn-disabled'); ui.announce.innerText = "SAFE ZONE UNLOCKED!"; ui.announce.style.opacity = 1; setTimeout(() => { ui.announce.style.opacity = 0; openShop(); }, 2000);
                     } else if (wave % 5 === 0) { 
                         ui.announce.innerText = "BOSS DEFEATED!"; ui.announce.style.opacity = 1; wave++; startWaveCountdown(3);
-                        
-                        // ✅ สลับมาเพลงบอส
                         bossMusic.pause(); bossMusic.currentTime = 0;
                         if(bgMusic.paused) bgMusic.play().catch(()=>{});
-
                     } else { wave++; ui.announce.innerText = "WAVE CLEAR!"; ui.announce.style.opacity = 1; startWaveCountdown(3); }
                 }
             }
@@ -737,8 +805,6 @@
             let mx=0, my=0; if(keys.w)my--; if(keys.s)my++; if(keys.a)mx--; if(keys.d)mx++;
             if(touchMove.id!==null){ mx=touchMove.vec.x; my=touchMove.vec.y; }
             if(mx!==0||my!==0){ if(touchMove.id===null){const l=Math.hypot(mx,my);mx/=l;my/=l;} player.x+=mx*player.speed; player.y+=my*player.speed; const bottomPadding = isMobile ? 40 : 0; 
-            
-            // ✅ แก้ไขขอบเขตการเดินให้ถูกต้องตาม Scale
             const ratio = isMobile ? Math.min(window.devicePixelRatio, 1.5) : 1;
             const boundsW = canvas.width / ratio;
             const boundsH = canvas.height / ratio;
@@ -750,14 +816,12 @@
 
             for(let i = particles.length - 1; i >= 0; i--) { const p = particles[i]; if(p.a <= 0) particles.splice(i, 1); else p.update(); }
             for(let i = projectiles.length - 1; i >= 0; i--) { const p = projectiles[i]; p.update(); 
-                // ✅ แก้ไขขอบเขตกระสุน
                 const ratio = isMobile ? Math.min(window.devicePixelRatio, 1.5) : 1;
                 if(p.x<0||p.x>canvas.width/ratio||p.y<0||p.y>canvas.height/ratio||p.hits<=0) projectiles.splice(i, 1); 
             }
             
             for(let i = enemyProjectiles.length - 1; i >= 0; i--) {
                 const p = enemyProjectiles[i]; p.update();
-                // ✅ แก้ไขขอบเขตกระสุนศัตรู
                 const ratio = isMobile ? Math.min(window.devicePixelRatio, 1.5) : 1;
                 if(p.x<0||p.x>canvas.width/ratio||p.y<0||p.y>canvas.height/ratio) { enemyProjectiles.splice(i,1);
                 } else if(Math.hypot(p.x-player.x, p.y-player.y) < p.r + player.r) { 
@@ -833,12 +897,11 @@
                 if (img && img.complete && img.naturalHeight !== 0) ctx.drawImage(img, -size/2, -size/2, size, size); else { ctx.beginPath(); ctx.arc(0, 0, this.r, 0, Math.PI*2); ctx.fillStyle = this.c; ctx.fill(); }
                 ctx.restore();
                 
-                // ✅ แก้ไข: กลับมาใช้หลอดเลือดแบบบาง (Thin Style)
                 if(this.hp < this.maxHp){
                     ctx.fillStyle='red';
-                    ctx.fillRect(this.x-10, this.y-this.r-8, 20, 3); // พื้นหลังแดง
+                    ctx.fillRect(this.x-10, this.y-this.r-8, 20, 3);
                     ctx.fillStyle='#22c55e';
-                    ctx.fillRect(this.x-10, this.y-this.r-8, 20*(this.hp/this.maxHp), 3); // เลือดเขียว
+                    ctx.fillRect(this.x-10, this.y-this.r-8, 20*(this.hp/this.maxHp), 3);
                 }
 
                 if(this.type === 'titan' && wave >= 15) { ctx.beginPath(); ctx.arc(this.x, this.y, this.r+2, 0, Math.PI*2); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke(); }
@@ -892,7 +955,6 @@
             }
             ctx.restore();
 
-            // ✅ แก้ไข: หลอดเลือดแบบบางสำหรับ Spring Enemy
             if (this.hp < this.maxHp) {
                 ctx.fillStyle = 'red';
                 ctx.fillRect(this.x - 10, this.y - this.height/2 - 10, 20, 3);
@@ -913,7 +975,28 @@
             else if (!mouse.down && !touchAim.active) angle = -Math.PI/2;
             const spread = 0.08;
             for(let i=0; i<player.turrets; i++) { const off=(i-(player.turrets-1)/2)*spread; ctx.save(); ctx.translate(player.x, player.y); ctx.rotate(angle+off); ctx.restore(); }
-            if (playerImage.complete) { ctx.save(); ctx.translate(player.x, player.y); ctx.rotate(angle); const size = player.r * 2.8; ctx.drawImage(playerImage, -size/2, -size/2, size, size); ctx.restore(); } else { ctx.beginPath(); ctx.arc(player.x, player.y, player.r, 0, Math.PI*2); ctx.fillStyle=player.color; ctx.fill(); }
+            
+            // ✅ แสดงผลสกินตัวละคร
+            const currentSkin = skinDatabase.find(s => s.id === equippedSkin) || skinDatabase[0];
+            
+            if (playerImage.complete && equippedSkin === 'default') { 
+                ctx.save(); ctx.translate(player.x, player.y); ctx.rotate(angle); 
+                const size = player.r * 2.8; 
+                ctx.drawImage(playerImage, -size/2, -size/2, size, size); 
+                ctx.restore(); 
+            } else { 
+                ctx.beginPath(); 
+                ctx.arc(player.x, player.y, player.r, 0, Math.PI*2); 
+                ctx.fillStyle = currentSkin.color; 
+                ctx.fill();
+                
+                if(currentSkin.emoji) {
+                    ctx.font = "20px Arial";
+                    ctx.textAlign = "center";
+                    ctx.textBaseline = "middle";
+                    ctx.fillText(currentSkin.emoji, player.x, player.y);
+                }
+            }
         }
         
         function spawnEnemy() {    
@@ -929,7 +1012,7 @@
         }
 
         function createExplosion(x,y,c) { 
-            const count = isMobile ? 2 : 5; // มือถือเอาแค่ 2 เม็ดพอ
+            const count = isMobile ? 2 : 5; 
             for(let i=0;i<count;i++) particles.push(new Particle(x,y,c)); 
         }
 
@@ -942,11 +1025,10 @@
             } 
             update(){
                 this.x+=this.vx; this.y+=this.vy;
-                this.a -= isMobile ? 0.1 : 0.05; // หายไวขึ้นในมือถือ
+                this.a -= isMobile ? 0.1 : 0.05; 
                 ctx.save();
                 ctx.globalAlpha=this.a;
                 ctx.beginPath();
-                // วาดสี่เหลี่ยมแทนวงกลม (เร็วกว่า)
                 ctx.fillStyle=this.c;
                 ctx.fillRect(this.x, this.y, Math.random()*3, Math.random()*3); 
                 ctx.restore();
@@ -967,13 +1049,11 @@
 
         function gainXp(amt) { if(player.lvl>=30)return; player.xp+=amt; if(player.xp>=player.xpNeed){player.xp-=player.xpNeed; player.lvl++; player.xpNeed=Math.floor(player.xpNeed*1.3); triggerLevelUp();} updateHud(); }
         
-        // ✅ แก้ไข: เขียนระบบสุ่มสกิลใหม่ (ป้องกันลูปวนไม่รู้จบ)
         function triggerLevelUp() { 
             isPaused=true; 
             ui.upgrade.classList.remove('hidden'); 
             ui.cards.innerHTML=''; 
             
-            // 1. กรองสกิลที่ยังอัปได้ (ไม่ตัน)
             const availableSkills = skills.filter(s => {
                 if (s.id === 't' && player.turrets >= 5) return false;
                 if (s.id === 'r' && player.regen >= 30) return false;
@@ -981,15 +1061,13 @@
                 return true;
             });
 
-            // 2. สุ่มเลือกมาสูงสุด 3 อัน
             let opts = [];
             for (let i = 0; i < 3 && availableSkills.length > 0; i++) {
                 const idx = Math.floor(Math.random() * availableSkills.length);
                 opts.push(availableSkills[idx]);
-                availableSkills.splice(idx, 1); // ลบออกกันซ้ำ
+                availableSkills.splice(idx, 1); 
             }
 
-            // 3. สร้างการ์ด
             opts.forEach(s => { 
                 const el=document.createElement('div'); el.className='skill-card'; 
                 el.innerHTML=`<div class="skill-icon">${s.i}</div><div class="skill-title">${s.n}</div><div class="skill-stat">${s.d}</div><div class="skill-desc">${s.explain}</div>`; 
@@ -1005,7 +1083,6 @@
                 ui.cards.appendChild(el); 
             }); 
             
-            // ถ้าไม่มีสกิลเหลือให้อัปเลย (ตันหมดแล้ว) ให้ปิดหน้าต่างอัตโนมัติ
             if (opts.length === 0) {
                 isPaused = false;
                 ui.upgrade.classList.add('hidden');
@@ -1015,7 +1092,6 @@
         function startWaveCountdown(seconds) { let count = seconds; ui.announce.innerText = count; ui.announce.style.opacity = 1; let timer = setInterval(() => { count--; if (count > 0) ui.announce.innerText = count; else { clearInterval(timer); ui.announce.innerText = "START!"; setTimeout(() => { ui.announce.style.opacity = 0; startNextWave(); }, 1000); } }, 1000); }
 
         function startNextWave() { 
-            // ✅ ตั้งค่า Wave 7 มอนสเตอร์สปริงเกิด
             if (wave >= 7 && (wave - 7) % 2 === 0) {
                 let count = 3 + ((wave - 7) / 2 * 2);
                 for(let i=0; i<count; i++) {
@@ -1045,8 +1121,6 @@
             } else { 
                 bossesToSpawn = 0; 
                 bossMusic.pause(); 
-                
-                // ✅ เล่นเพลงเดียววนลูป
                 if (bgMusic.paused) {
                     bgMusic.play().catch(()=>{});
                 }
@@ -1066,38 +1140,144 @@
             document.getElementById('reviveIcon').style.display = player.hasRevive ? 'inline' : 'none';
         }
         
-        function startGame() {
+        // ✅ 2. เปลี่ยนฟังก์ชันเริ่มเกม: จากหน้า Start -> ไปหน้า Menu แทน
+        function goToMainMenuInit() {
             if (!currentPlayerName || currentPlayerName === "Survivor") { const inputName = ui.nameInput.value.trim(); if(!inputName) { alert("กรุณาใส่ชื่อก่อนเริ่มเกม!"); return; } currentPlayerName = inputName; }
             playClickSound();
+            
+            // ซ่อนหน้า Start, เปิดหน้า Menu
+            document.getElementById('startScreen').classList.add('hidden');
+            goToMainMenu();
+        }
+
+        function goToMainMenu() {
+            const menu = document.getElementById('mainMenuScreen');
+            document.getElementById('menuPlayerName').innerText = currentPlayerName;
+            document.getElementById('globalTokenDisplay').innerText = playerToken.toLocaleString();
+            
+            menu.classList.remove('hidden');
+            ui.start.classList.add('hidden');
+            ui.over.classList.add('hidden');
+            document.getElementById('permanentShopScreen').classList.add('hidden');
+        }
+
+        // ✅ 3. ฟังก์ชันเริ่มเกมจริงๆ (Play Game)
+        function startActualGame() {
+            playClickSound();
+            document.getElementById('mainMenuScreen').classList.add('hidden');
+            
             gameActive = true; isPaused = false; score = 0; gold=0; 
-            
-            // ✅ ตั้งค่าเริ่มที่ Wave 1 (ปกติ)
             wave = 1; 
-            
-            // ✅ ปรับ Scale ตาม Device (แก้แลค)
             resize(); 
             player.x=canvas.width/(isMobile?Math.min(window.devicePixelRatio,2):1)/2; 
             player.y=canvas.height/(isMobile?Math.min(window.devicePixelRatio,2):1)/2;
+
+            // ตั้งค่าสีตามสกิน
+            const currentSkinData = skinDatabase.find(s => s.id === equippedSkin) || skinDatabase[0];
+            player.color = currentSkinData.color;
 
             player.hp=100; player.maxHp=100; player.lvl=1; player.xp=0; player.xpNeed=100; player.dmg=1; player.turrets=1; player.regen=5; player.baseSpeed=4; player.speed=4; player.slowStacks=0; player.slowTimer=0; player.frost = false; player.fire = false; player.crit = 0; player.shield=0; player.maxShield=100;
             player.hasRevive = false; player.reviveCount = 0; player.revivePrice = 200;
 
             enemies=[]; projectiles=[]; particles=[]; enemyProjectiles=[]; springEnemies=[]; 
-            
             bossMusic.pause(); bossMusic.currentTime = 0; gameOverSound.pause(); gameOverSound.currentTime = 0; 
-            
-            // 🛑 เล่นเพลงเดียววนลูป
-            bgMusic.currentTime = 0;
-            bgMusic.play().catch(()=>{});
+            bgMusic.currentTime = 0; bgMusic.play().catch(()=>{});
 
-            ui.start.classList.add('hidden'); ui.over.classList.add('hidden'); updateHud(); startNextWave(); startRegen(); startAutoSave(); animate();
+            updateHud(); startNextWave(); startRegen(); startAutoSave(); animate();
+        }
+
+        // ✅ 4. ระบบร้านค้าถาวร
+        function openPermanentShop() {
+            playClickSound();
+            document.getElementById('mainMenuScreen').classList.add('hidden');
+            document.getElementById('permanentShopScreen').classList.remove('hidden');
+            renderSkinShop();
+        }
+
+        function closePermanentShop() {
+            playClickSound();
+            document.getElementById('permanentShopScreen').classList.add('hidden');
+            goToMainMenu();
+        }
+
+        function renderSkinShop() {
+            document.getElementById('shopTokenDisplay').innerText = playerToken.toLocaleString();
+            const grid = document.getElementById('skinGrid');
+            grid.innerHTML = '';
+
+            skinDatabase.forEach(skin => {
+                const isOwned = ownedSkins.includes(skin.id);
+                const isEquipped = equippedSkin === skin.id;
+                
+                const card = document.createElement('div');
+                card.className = `skin-card ${isOwned ? 'owned' : 'locked'} ${isEquipped ? 'selected' : ''}`;
+                
+                let statusText = isEquipped ? "EQUIPPED" : (isOwned ? "OWNED" : `${skin.cost.toLocaleString()} Token`);
+                let btnColor = isOwned ? (isEquipped ? '#fbbf24' : '#22c55e') : '#ef4444';
+                
+                card.innerHTML = `
+                    <div class="skin-preview" style="background:${skin.color};">${skin.emoji}</div>
+                    <div class="skin-name">${skin.name}</div>
+                    <div class="skin-status" style="color:${btnColor}; font-weight:bold;">${statusText}</div>
+                `;
+
+                card.onclick = () => handleSkinClick(skin);
+                grid.appendChild(card);
+            });
+        }
+
+        function handleSkinClick(skin) {
+            if (ownedSkins.includes(skin.id)) {
+                if (equippedSkin !== skin.id) {
+                    playClickSound();
+                    equippedSkin = skin.id;
+                    savePlayerData();
+                    renderSkinShop();
+                }
+            } else {
+                if (playerToken >= skin.cost) {
+                    if(confirm(`ยืนยันการซื้อสกิน "${skin.name}" ราคา ${skin.cost} Token?`)) {
+                        playClickSound();
+                        playerToken -= skin.cost;
+                        ownedSkins.push(skin.id);
+                        equippedSkin = skin.id;
+                        savePlayerData();
+                        renderSkinShop();
+                    }
+                } else {
+                    alert("Token ไม่พอ!"); 
+                }
+            }
         }
 
         function gameOver() { 
-            gameActive = false; deathCount++; clearInterval(regenInterval); clearInterval(autoSaveInterval); cancelAnimationFrame(animationId); bgMusic.pause(); bossMusic.pause(); gameOverSound.currentTime = 0; gameOverSound.play().catch(()=>{}); ui.finalScore.innerText = score; ui.finalWave.innerText = `Wave: ${wave} | Deaths: ${deathCount}`; saveScoreData(currentPlayerName, wave, score); ui.over.classList.remove('hidden'); 
+            gameActive = false; deathCount++; clearInterval(regenInterval); clearInterval(autoSaveInterval); cancelAnimationFrame(animationId); bgMusic.pause(); bossMusic.pause(); gameOverSound.currentTime = 0; gameOverSound.play().catch(()=>{}); 
+            
+            // ✅ คำนวณ Token
+            const earnedToken = Math.floor(score / 10) + (wave * 5);
+            playerToken += earnedToken;
+            savePlayerData();
+
+            ui.finalScore.innerText = score; 
+            ui.finalWave.innerHTML = `Wave: ${wave} | Deaths: ${deathCount}<br>
+<div style="margin-top:10px; display:flex; align-items:center; justify-content:center; gap:5px; color:#facc15; font-size:20px; font-weight:bold;">
+    <img src="token.png" style="width:30px; height:30px; vertical-align:middle; border-radius:50%;"> 
+    +${earnedToken} Token!
+</div>`;
+            
+            saveScoreData(currentPlayerName, wave, score); 
+            ui.over.classList.remove('hidden'); 
         }
-        function restartGame() { playClickSound(); ui.over.classList.add('hidden'); startGame(); }
-        function goToHome() { playClickSound(); saveScoreData(currentPlayerName, wave, score); ui.over.classList.add('hidden'); ui.start.classList.remove('hidden'); fetchLeaderboard(); bgMusic.pause(); bossMusic.pause(); }
+
+        // ปุ่มกลับหน้าหลักตอนตาย
+        function restartGameToMenu() {
+            playClickSound(); 
+            saveScoreData(currentPlayerName, wave, score); 
+            ui.over.classList.add('hidden'); 
+            goToMainMenu(); 
+            fetchLeaderboard(); 
+            bgMusic.pause(); bossMusic.pause(); 
+        }
     </script>
 </body>
 </html>
