@@ -505,8 +505,8 @@
 
             if(!gameActive){player.x = (canvas.width/ratio)/2; player.y = (canvas.height/ratio)/2;} 
             
-            // ✅ Fix: ปิด Image Smoothing เพื่อให้ภาพ Pixel Art คมชัด (แก้ปัญหามอนแตก/เบลอ)
-            ctx.imageSmoothingEnabled = false;
+            // ✅ Fix: เปิด Image Smoothing เพื่อแก้ภาพกระตุก (สมูทขึ้น)
+            ctx.imageSmoothingEnabled = true;
         }
         window.addEventListener('resize', resize);
         if (window.visualViewport) { window.visualViewport.addEventListener('resize', resize); }
@@ -964,10 +964,30 @@
 
         function gainXp(amt) { if(player.lvl>=30)return; player.xp+=amt; if(player.xp>=player.xpNeed){player.xp-=player.xpNeed; player.lvl++; player.xpNeed=Math.floor(player.xpNeed*1.3); triggerLevelUp();} updateHud(); }
         
+        // ✅ แก้ไข: เขียนระบบสุ่มสกิลใหม่ (ป้องกันลูปวนไม่รู้จบ)
         function triggerLevelUp() { 
-            isPaused=true; ui.upgrade.classList.remove('hidden'); ui.cards.innerHTML=''; let opts=[]; 
-            while(opts.length<3){ const s=skills[Math.floor(Math.random()*skills.length)]; if((s.id==='t'&&player.turrets>=5) || (s.id==='r'&&player.regen>=30) || (s.id==='fr' && (player.frost || player.fire))) continue; if(!opts.includes(s))opts.push(s); } 
-            opts.forEach(s=>{ 
+            isPaused=true; 
+            ui.upgrade.classList.remove('hidden'); 
+            ui.cards.innerHTML=''; 
+            
+            // 1. กรองสกิลที่ยังอัปได้ (ไม่ตัน)
+            const availableSkills = skills.filter(s => {
+                if (s.id === 't' && player.turrets >= 5) return false;
+                if (s.id === 'r' && player.regen >= 30) return false;
+                if (s.id === 'fr' && (player.frost || player.fire)) return false;
+                return true;
+            });
+
+            // 2. สุ่มเลือกมาสูงสุด 3 อัน
+            let opts = [];
+            for (let i = 0; i < 3 && availableSkills.length > 0; i++) {
+                const idx = Math.floor(Math.random() * availableSkills.length);
+                opts.push(availableSkills[idx]);
+                availableSkills.splice(idx, 1); // ลบออกกันซ้ำ
+            }
+
+            // 3. สร้างการ์ด
+            opts.forEach(s => { 
                 const el=document.createElement('div'); el.className='skill-card'; 
                 el.innerHTML=`<div class="skill-icon">${s.i}</div><div class="skill-title">${s.n}</div><div class="skill-stat">${s.d}</div><div class="skill-desc">${s.explain}</div>`; 
                 el.onclick=()=>{ 
@@ -981,6 +1001,12 @@
                 }; 
                 ui.cards.appendChild(el); 
             }); 
+            
+            // ถ้าไม่มีสกิลเหลือให้อัปเลย (ตันหมดแล้ว) ให้ปิดหน้าต่างอัตโนมัติ
+            if (opts.length === 0) {
+                isPaused = false;
+                ui.upgrade.classList.add('hidden');
+            }
         }
 
         function startWaveCountdown(seconds) { let count = seconds; ui.announce.innerText = count; ui.announce.style.opacity = 1; let timer = setInterval(() => { count--; if (count > 0) ui.announce.innerText = count; else { clearInterval(timer); ui.announce.innerText = "START!"; setTimeout(() => { ui.announce.style.opacity = 0; startNextWave(); }, 1000); } }, 1000); }
@@ -1009,18 +1035,15 @@
                 bossesToSpawn = Math.floor(wave / 5); 
                 ui.announce.innerText = "BOSS WAVE!"; 
                 ui.announce.style.opacity = 1; 
-                
-                // ✅ สลับเพลงบอส (ใช้แค่ 2 ไฟล์)
                 bgMusic.pause(); 
                 bossMusic.currentTime = 0; 
                 bossMusic.play().catch(()=>{}); 
-                
                 setTimeout(() => ui.announce.style.opacity = 0, 2000); 
             } else { 
                 bossesToSpawn = 0; 
-                
-                // ✅ สลับกลับมาเพลงปกติ
                 bossMusic.pause(); 
+                
+                // ✅ เล่นเพลงเดียววนลูป
                 if (bgMusic.paused) {
                     bgMusic.play().catch(()=>{});
                 }
