@@ -414,6 +414,7 @@
         const canvas = document.getElementById('gameCanvas'); const ctx = canvas.getContext('2d');
         const ui={start:document.getElementById('startScreen'),over:document.getElementById('gameOverScreen'),upgrade:document.getElementById('upgradeScreen'),settings:document.getElementById('settingsScreen'),shop:document.getElementById('shopScreen'),shopGold:document.getElementById('shopGoldVal'),shopFire:document.getElementById('shop-fire'),cards:document.getElementById('cardContainer'),score:document.getElementById('scoreVal'),gold:document.getElementById('goldVal'),wave:document.getElementById('waveText'),timer:document.getElementById('timerText'),dmg:document.getElementById('dmgVal'),regen:document.getElementById('regenVal'),hpFill:document.getElementById('healthFill'),hpText:document.getElementById('hpText'),xpFill:document.getElementById('xpFill'),lvl:document.getElementById('levelDisplay'),announce:document.getElementById('waveAnnouncement'),float:document.getElementById('floatingTextContainer'),finalScore:document.getElementById('finalScore'),finalWave:document.getElementById('finalWave'),joyMove:document.getElementById('joy-move'),joyAim:document.getElementById('joy-aim'),rotateMsg:document.getElementById('rotate-message'),nameInput:document.getElementById('name-input'), reviveScreen:document.getElementById('reviveScreen')};
 
+        // ✅ Preload ระบบโหลดภาพล่วงหน้า (แก้กระตุกบนมือถือ)
         const playerImage = new Image(); playerImage.src = 'player.png'; 
         const enemyImages = { normal: new Image(), big: new Image(), runner: new Image(), zigzag: new Image(), titan: new Image() };
         enemyImages.normal.src = 'zombie_normal.png'; enemyImages.big.src = 'zombie_big.png'; enemyImages.runner.src = 'zombie_runner.png'; enemyImages.zigzag.src = 'zombie_zigzag.png'; enemyImages.titan.src = 'zombie_titan.png';
@@ -421,6 +422,7 @@
         const springSpriteRoll = new Image(); springSpriteRoll.src = 'enemy_spring_roll.png';
         const springSpriteLunge = new Image(); springSpriteLunge.src = 'enemy_spring_lunge.png';
 
+        // ✅ กลับมาใช้เพลงเดียว (music.mp3) วนลูป
         let bgmVolume = 0.1; let sfxVolume = 1.0; 
         
         const bgMusic = new Audio('music.mp3'); 
@@ -668,6 +670,9 @@
             playClickSound();
             ui.reviveScreen.classList.add('hidden');
             gameActive = true;
+            
+            // เพิ่มจำนวนการตาย (นับรวมตอนใช้กันตายด้วย)
+            deathCount++; 
             
             // รีเซ็ตสถานะและเลือด
             player.hp = player.maxHp;
@@ -1041,7 +1046,7 @@
                 bossesToSpawn = 0; 
                 bossMusic.pause(); 
                 
-                // ✅ แก้เพลงหาย: ถ้าไม่ใช่บอส ให้เล่นเพลงเดิมต่อ
+                // ✅ เล่นเพลงเดียววนลูป
                 if (bgMusic.paused) {
                     bgMusic.play().catch(()=>{});
                 }
