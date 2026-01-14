@@ -558,13 +558,30 @@
         let equippedSkin = 'default';
 
         // รายชื่อสกินทั้งหมด
-        const skinDatabase = [
-            { id: 'default', name: 'Survivor', cost: 0, color: '#3b82f6', emoji: '' },
-            { id: 'red', name: 'Red Ranger', cost: 2000, color: '#ef4444', emoji: '' },
-            { id: 'neon', name: 'Neon Cyber', cost: 5000, color: '#06b6d4', emoji: '' },
-            { id: 'gold', name: 'The King', cost: 10000, color: '#fbbf24', emoji: '👑' },
-            { id: 'dark', name: 'Shadow Ops', cost: 15000, color: '#111827', emoji: '🥷' },
-            { id: 'pink', name: 'Sweet Pink', cost: 3000, color: '#ec4899', emoji: '🎀' }
+      const skinDatabase = [
+            { 
+                id: 'default', 
+                name: 'Survivor', 
+                cost: 0, 
+                img: 'player.png', 
+                color: '#3b82f6', 
+                desc: 'มาตรฐาน (HP 100 | Regen 5)', // ข้อความโชว์ในร้าน
+                statHp: 100, // ค่าพลังจริง
+                statRegen: 5 
+            },
+            { 
+                id: 'neon_striker', // ไอดีห้ามซ้ำ
+                name: 'Neon Striker', 
+                cost: 5000, // ราคา (ปรับได้ตามใจ)
+                img: 'ship_neon.png', // ⚠️ ชื่อไฟล์รูปยานใหม่
+                color: '#06b6d4', 
+                desc: 'สายอึด (HP 150 | Regen 15)', // ข้อความโชว์
+                statHp: 150, // เลือดเยอะ
+                statRegen: 15 // รีเลือดไว
+            },
+            // ... สกินสีอื่นๆ แบบเดิม (ถ้าไม่มี statHp จะใช้ค่าพื้นฐาน) ...
+            { id: 'red', name: 'Red Ranger', cost: 2000, color: '#ef4444', emoji: '', desc: 'สีแดงแรงฤทธิ์' },
+            { id: 'gold', name: 'The King', cost: 10000, color: '#fbbf24', emoji: '👑', desc: 'ราชาแห่งทองคำ' }
         ];
 
         function loadPlayerData() {
@@ -1162,7 +1179,7 @@
         }
 
         // ✅ 3. ฟังก์ชันเริ่มเกมจริงๆ (Play Game)
-        function startActualGame() {
+     function startActualGame() {
             playClickSound();
             document.getElementById('mainMenuScreen').classList.add('hidden');
             
@@ -1172,12 +1189,20 @@
             player.x=canvas.width/(isMobile?Math.min(window.devicePixelRatio,2):1)/2; 
             player.y=canvas.height/(isMobile?Math.min(window.devicePixelRatio,2):1)/2;
 
-            // ตั้งค่าสีตามสกิน
+            // ดึงข้อมูลสกินที่ใส่อยู่
             const currentSkinData = skinDatabase.find(s => s.id === equippedSkin) || skinDatabase[0];
-            player.color = currentSkinData.color;
+            player.color = currentSkinData.color || '#3b82f6';
 
-            player.hp=100; player.maxHp=100; player.lvl=1; player.xp=0; player.xpNeed=100; player.dmg=1; player.turrets=1; player.regen=5; player.baseSpeed=4; player.speed=4; player.slowStacks=0; player.slowTimer=0; player.frost = false; player.fire = false; player.crit = 0; player.shield=0; player.maxShield=100;
-            player.hasRevive = false; player.reviveCount = 0; player.revivePrice = 200;
+            // ✅ แก้ไข: ใช้ค่าพลังจากสกิน (ถ้าไม่มีให้ใช้ค่าเดิม 100 กับ 5)
+            player.maxHp = currentSkinData.statHp || 100; 
+            player.hp = player.maxHp; 
+            player.regen = currentSkinData.statRegen || 5;
+
+            // ค่าอื่นๆ เหมือนเดิม
+            player.lvl=1; player.xp=0; player.xpNeed=100; player.dmg=1; player.turrets=1; 
+            player.baseSpeed=4; player.speed=4; player.slowStacks=0; player.slowTimer=0; 
+            player.frost = false; player.fire = false; player.crit = 0; player.shield=0; 
+            player.maxShield=100; player.hasRevive = false; player.reviveCount = 0; player.revivePrice = 200;
 
             enemies=[]; projectiles=[]; particles=[]; enemyProjectiles=[]; springEnemies=[]; 
             bossMusic.pause(); bossMusic.currentTime = 0; gameOverSound.pause(); gameOverSound.currentTime = 0; 
@@ -1201,7 +1226,9 @@
         }
 
         function renderSkinShop() {
+            // อัปเดตยอดเงินมุมซ้ายบน
             document.getElementById('shopTokenDisplay').innerText = playerToken.toLocaleString();
+            
             const grid = document.getElementById('skinGrid');
             grid.innerHTML = '';
 
@@ -1210,15 +1237,51 @@
                 const isEquipped = equippedSkin === skin.id;
                 
                 const card = document.createElement('div');
+                // กำหนด class เพื่อเปลี่ยนสีขอบการ์ด
                 card.className = `skin-card ${isOwned ? 'owned' : 'locked'} ${isEquipped ? 'selected' : ''}`;
                 
-                let statusText = isEquipped ? "EQUIPPED" : (isOwned ? "OWNED" : `${skin.cost.toLocaleString()} Token`);
-                let btnColor = isOwned ? (isEquipped ? '#fbbf24' : '#22c55e') : '#ef4444';
+                // 1. ส่วนแสดงผลข้อความปุ่มกด (ราคา/สถานะ)
+                let statusText = "";
+                let btnColor = "";
+
+                if (isEquipped) {
+                    statusText = "✅ ใส่อยู่ (EQUIPPED)";
+                    btnColor = "#fbbf24"; // สีเหลืองทอง
+                } else if (isOwned) {
+                    statusText = "มีแล้ว (OWNED)";
+                    btnColor = "#22c55e"; // สีเขียว
+                } else {
+                    // ✅ โชว์ราคาตรงนี้ครับ
+                    statusText = `🛒 ซื้อ ${skin.cost.toLocaleString()} Token`;
+                    btnColor = "#ef4444"; // สีแดง
+                }
                 
+                // 2. ส่วนแสดงรูปภาพ (เหมือนเดิม)
+                let previewHtml = '';
+                if (skin.img) {
+                    previewHtml = `
+                        <div class="skin-preview" style="background: transparent; border: none; box-shadow: none;">
+                            <img src="${skin.img}" style="width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 0 5px rgba(255,255,255,0.5));">
+                        </div>`;
+                } else {
+                    previewHtml = `
+                        <div class="skin-preview" style="background:${skin.color};">
+                            ${skin.emoji || ''}
+                        </div>`;
+                }
+
+                // 3. รวม HTML เข้าด้วยกัน (เพิ่มการแสดงราคาชัดๆ)
                 card.innerHTML = `
-                    <div class="skin-preview" style="background:${skin.color};">${skin.emoji}</div>
+                    ${previewHtml}
                     <div class="skin-name">${skin.name}</div>
-                    <div class="skin-status" style="color:${btnColor}; font-weight:bold;">${statusText}</div>
+                    
+                    <div class="skin-desc" style="font-size: 11px; color: #ccc; margin-bottom: 8px; height:30px; display:flex; align-items:center; justify-content:center;">
+                        ${skin.desc || 'ไม่มีคุณสมบัติพิเศษ'}
+                    </div>
+
+                    <div class="skin-status" style="color:${btnColor}; font-weight:bold; border: 1px solid ${btnColor}; padding: 4px 10px; border-radius: 20px; font-size: 12px; background: rgba(0,0,0,0.3);">
+                        ${statusText}
+                    </div>
                 `;
 
                 card.onclick = () => handleSkinClick(skin);
@@ -1281,3 +1344,4 @@
     </script>
 </body>
 </html>
+
